@@ -1,0 +1,27 @@
+{
+  "name": "sponsorscout-backend",
+  "version": "1.0.0",
+  "description": "Enterprise-grade Node.js backend using Fastify and TypeScript",
+  "main": "dist/app.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/app.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.2.0",
+    "@fastify/env": "latest",
+    "@types/handlebars": "^4.0.40",
+    "axios": "^1.16.1",
+    "dotenv": "latest",
+    "fastify": "latest",
+    "googleapis": "latest",
+    "handlebars": "^4.7.9",
+    "ioredis": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "ts-node-dev": "latest",
+    "typescript": "latest"
+  }
+}

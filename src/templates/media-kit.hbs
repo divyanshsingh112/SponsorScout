@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Media Kit - {{channelName}}</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 40px;
+            color: #333;
+            background-color: #f9f9fb;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid #eaeaea;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+            color: #1a1a1a;
+        }
+        .header p {
+            color: #666;
+            font-size: 16px;
+            margin-top: 8px;
+        }
+        .stats-grid {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+        .stat-box {
+            flex: 1;
+            text-align: center;
+            padding: 20px;
+            background: #f0f4f8;
+            border-radius: 8px;
+            margin: 0 10px;
+        }
+        .stat-box:first-child { margin-left: 0; }
+        .stat-box:last-child { margin-right: 0; }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .fee-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 15px rgba(118, 75, 162, 0.2);
+        }
+        .fee-label {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        .fee-value {
+            font-size: 48px;
+            font-weight: 800;
+            margin-top: 10px;
+        }
+        .proof-section {
+            margin-top: 40px;
+            margin-bottom: 30px;
+        }
+        .proof-title {
+            font-size: 20px;
+            color: #1a1a1a;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .proof-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .proof-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #f0f4f8;
+        }
+        .video-title {
+            color: #333;
+            font-weight: 500;
+            max-width: 450px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .video-views {
+            color: #7f8c8d;
+            text-align: right;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #a0a0a0;
+            border-top: 1px solid #eaeaea;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            {{#if channelAvatarUrl}}
+            <img src="{{channelAvatarUrl}}" alt="{{channelName}}" class="avatar">
+            {{/if}}
+            <h1>{{channelName}}</h1>
+            <p>Official Media & Sponsorship Kit</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-value">{{subscriberCount}}</div>
+                <div class="stat-label">Subscribers</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">{{averageViews}}</div>
+                <div class="stat-label">Avg. Views</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value">{{engagementRate}}%</div>
+                <div class="stat-label">Engagement</div>
+            </div>
+        </div>
+
+        <div class="fee-section">
+            <div class="fee-label">Suggested Sponsorship Fee (INR)</div>
+            <div class="fee-value">₹{{suggestedFee}}</div>
+        </div>
+
+        {{#if recentVideos}}
+        <div class="proof-section">
+            <h3 class="proof-title">Recent Performance Proof</h3>
+            <table class="proof-table">
+                <tbody>
+                    {{#each recentVideos}}
+                    <tr>
+                        <td class="video-title">{{this.title}}</td>
+                        <td class="video-views">{{this.viewCount}} views</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+        {{/if}}
+
+        <div class="footer">
+            Generated by SponsorScout on {{currentDate}}. Pricing metrics calibrated to real-time Indian {{niche}} market rates.
+        </div>
+    </div>
+</body>
+</html>
