@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Search, Loader2, Download, CheckCircle, Lock } from 'lucide-react';
 
@@ -25,6 +25,25 @@ function App() {
   const [transactionId, setTransactionId] = useState('');
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'success'>('idle');
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment') === 'success') {
+      const pendingChannel = localStorage.getItem('pending_pdf_channel');
+      if (pendingChannel) {
+        // Trigger download
+        window.location.href = `${import.meta.env.VITE_API_BASE_URL}/api/download-kit/${pendingChannel}`;
+        
+        // Clean up URL parameters without page reload
+        const url = new URL(window.location.href);
+        url.searchParams.delete('payment');
+        window.history.replaceState({}, document.title, url.pathname + url.search);
+        
+        // Clean up localStorage
+        localStorage.removeItem('pending_pdf_channel');
+      }
+    }
+  }, []);
+
   const handleEvaluate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!channelId) return;
@@ -47,14 +66,9 @@ function App() {
     }
   };
 
-  const handleUnlock = async () => {
-    try {
-      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/pay`, { channelId });
-      setTransactionId(res.data.transactionId);
-      setPaymentStatus('pending');
-    } catch (err: any) {
-      setError('Failed to initiate payment.');
-    }
+  const handleUnlock = () => {
+    localStorage.setItem('pending_pdf_channel', channelId);
+    window.location.href = 'SUPERPROFILE_LINK_HERE';
   };
 
   const simulatePayment = async () => {
@@ -161,7 +175,7 @@ function App() {
                       className="w-full py-3 md:py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold text-base md:text-lg shadow-lg shadow-indigo-500/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center space-x-2"
                     >
                       <Lock className="h-5 w-5" />
-                      <span>Unlock & Download PDF - ₹29</span>
+                      <span>Unlock Full Report (₹29)</span>
                     </button>
                   </div>
                 )}
