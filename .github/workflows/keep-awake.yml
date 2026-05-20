@@ -1,0 +1,40 @@
+name: Keep Backend Awake
+
+on:
+  schedule:
+    # Runs every 14 minutes to prevent free hosting platforms (like Render) from sleeping
+    - cron: '*/14 * * * *'
+  workflow_dispatch: # Allows manual run from the GitHub Actions tab
+
+jobs:
+  ping:
+    name: Ping Backend Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send keep-awake ping
+        run: |
+          URL="${{ secrets.BACKEND_URL }}"
+          if [ -z "$URL" ]; then
+            echo "=========================================================================="
+            echo " WARNING: BACKEND_URL repository secret is not set!"
+            echo " Please add 'BACKEND_URL' under Settings > Secrets and variables > Actions"
+            echo " Example: https://sponsorscout-backend.onrender.com"
+            echo "=========================================================================="
+            exit 1
+          fi
+
+          echo "Pinging backend at: $URL"
+          RESPONSE=$(curl -sL -w "\nHTTP_STATUS:%{http_code}" "$URL")
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
+
+          echo "Response Body: $BODY"
+          echo "HTTP Status Code: $STATUS"
+
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+            echo "Success: Backend is active and responded successfully!"
+          else
+            echo "Error: Backend returned status $STATUS"
+            exit 1
+          fi
