@@ -20,9 +20,9 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [channelData, setChannelData] = useState<ChannelData | null>(null);
-  
+
   // Payment states
-  const [transactionId, setTransactionId] = useState('');
+  const [transactionId] = useState('');
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'success'>('idle');
 
   useEffect(() => {
@@ -32,12 +32,12 @@ function App() {
       if (pendingChannel) {
         // Trigger download
         window.location.href = `${import.meta.env.VITE_API_BASE_URL}/api/download-kit/${pendingChannel}`;
-        
+
         // Clean up URL parameters without page reload
         const url = new URL(window.location.href);
         url.searchParams.delete('payment');
         window.history.replaceState({}, document.title, url.pathname + url.search);
-        
+
         // Clean up localStorage
         localStorage.removeItem('pending_pdf_channel');
       }
@@ -68,7 +68,7 @@ function App() {
 
   const handleUnlock = () => {
     localStorage.setItem('pending_pdf_channel', channelId);
-    window.location.href = 'SUPERPROFILE_LINK_HERE';
+    window.location.href = 'https://topmate.io/sponsorscout/2109766';
   };
 
   const simulatePayment = async () => {
@@ -78,7 +78,7 @@ function App() {
         status: 'SUCCESS'
       });
       setPaymentStatus('success');
-      
+
       // Instantly trigger download
       window.location.href = `${import.meta.env.VITE_API_BASE_URL}/api/download-kit/${channelId}`;
     } catch (err: any) {
@@ -91,7 +91,7 @@ function App() {
       {/* Hero Section */}
       <div className="w-full max-w-4xl mx-auto pt-16 md:pt-24 px-4 md:px-6 text-center flex-grow">
         <h1 className="text-4xl md:text-7xl font-extrabold tracking-tight mb-4 md:mb-6 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 text-transparent bg-clip-text">
-          Stop Guessing.<br/>Know Your Worth.
+          Stop Guessing.<br />Know Your Worth.
         </h1>
         <p className="text-base md:text-xl text-slate-400 w-full max-w-2xl mx-auto mb-8 md:mb-12">
           Generate an agency-grade Media Kit based on live Indian sponsorship rates.
@@ -99,8 +99,8 @@ function App() {
 
         {/* Input Form */}
         <form onSubmit={handleEvaluate} className="w-full max-w-xl mx-auto relative group flex flex-col gap-4">
-          <select 
-            value={selectedNiche} 
+          <select
+            value={selectedNiche}
             onChange={(e) => setSelectedNiche(e.target.value)}
             className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all cursor-pointer hover:bg-slate-800/50 text-sm md:text-base appearance-none"
           >
@@ -130,7 +130,7 @@ function App() {
             </button>
           </div>
         </form>
-        
+
         {error && (
           <div className="mt-6 text-red-400 bg-red-400/10 border border-red-400/20 py-3 px-4 rounded-xl inline-block text-sm md:text-base w-full max-w-xl">
             {error}
@@ -157,7 +157,7 @@ function App() {
 
               <div className="bg-slate-950/50 rounded-2xl p-6 md:p-8 border border-slate-800/50 text-center relative overflow-hidden">
                 <div className="text-slate-400 font-medium mb-4 uppercase tracking-wider text-xs md:text-sm">Suggested Sponsorship Fee</div>
-                
+
                 {paymentStatus === 'success' ? (
                   <div className="text-4xl md:text-7xl font-black bg-gradient-to-r from-emerald-400 to-cyan-400 text-transparent bg-clip-text">
                     ₹{channelData.calculated_sponsor_fee_inr.toLocaleString()}
@@ -167,7 +167,7 @@ function App() {
                     ₹{channelData.calculated_sponsor_fee_inr.toLocaleString()}
                   </div>
                 )}
-                
+
                 {paymentStatus === 'idle' && (
                   <div className="mt-6 md:mt-8">
                     <button
