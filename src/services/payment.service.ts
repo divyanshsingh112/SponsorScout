@@ -17,6 +17,17 @@ export class PaymentService {
     };
   }
 
+  static async unlockChannel(channelId: string) {
+    const cachedData = await getCachedChannel(channelId);
+    if (cachedData) {
+      cachedData.isPaid = true;
+      await cacheChannel(channelId, cachedData);
+    } else {
+      await cacheChannel(channelId, { isPaid: true });
+    }
+    return true;
+  }
+
   static async verifyPayment(transactionId: string) {
     // Look up the transaction in the cache
     const tx = transactionCache.get(transactionId);
@@ -28,14 +39,8 @@ export class PaymentService {
     tx.status = 'SUCCESS';
     transactionCache.set(transactionId, tx);
 
-    // Add a flag to the channelId cache stating { isPaid: true }
-    const cachedData = await getCachedChannel(tx.channelId);
-    if (cachedData) {
-      cachedData.isPaid = true;
-      await cacheChannel(tx.channelId, cachedData);
-    } else {
-      await cacheChannel(tx.channelId, { isPaid: true });
-    }
+    // Mark channel as paid and unlock it
+    await this.unlockChannel(tx.channelId);
 
     return true;
   }

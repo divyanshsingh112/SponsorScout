@@ -40,6 +40,31 @@ const paymentRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       return reply.status(404).send({ error: error.message });
     }
   });
+
+  // Endpoint 3: Unlock Channel (called after successful payment redirect, e.g. Topmate)
+  interface UnlockBody {
+    channelId: string;
+    unlockSecret: string;
+  }
+
+  fastify.post<{ Body: UnlockBody }>('/api/unlock-channel', async (request, reply) => {
+    const { channelId, unlockSecret } = request.body;
+    if (!channelId) {
+      return reply.status(400).send({ error: 'channelId is required' });
+    }
+
+    const serverSecret = process.env.UNLOCK_SECRET_KEY;
+    if (!serverSecret || !unlockSecret || unlockSecret !== serverSecret) {
+      return reply.status(403).send({ error: 'Invalid security token' });
+    }
+
+    try {
+      await PaymentService.unlockChannel(channelId);
+      return reply.send({ success: true, message: 'Media Kit unlocked successfully' });
+    } catch (error: any) {
+      return reply.status(500).send({ error: error.message });
+    }
+  });
 };
 
 export default paymentRoutes;

@@ -30,16 +30,28 @@ function App() {
     if (params.get('payment') === 'success') {
       const pendingChannel = localStorage.getItem('pending_pdf_channel');
       if (pendingChannel) {
-        // Trigger download
-        window.location.href = `${import.meta.env.VITE_API_BASE_URL}/api/download-kit/${pendingChannel}`;
+        const unlockSecret = import.meta.env.VITE_UNLOCK_SECRET_KEY || '';
 
-        // Clean up URL parameters without page reload
-        const url = new URL(window.location.href);
-        url.searchParams.delete('payment');
-        window.history.replaceState({}, document.title, url.pathname + url.search);
+        // Unlock the channel on the backend first, then trigger download
+        axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/unlock-channel`, {
+          channelId: pendingChannel,
+          unlockSecret
+        })
+          .then(() => {
+            window.location.href = `${import.meta.env.VITE_API_BASE_URL}/api/download-kit/${pendingChannel}`;
+          })
+          .catch((err) => {
+            console.error('Failed to unlock media kit:', err);
+          })
+          .finally(() => {
+            // Clean up URL parameters without page reload
+            const url = new URL(window.location.href);
+            url.searchParams.delete('payment');
+            window.history.replaceState({}, document.title, url.pathname + url.search);
 
-        // Clean up localStorage
-        localStorage.removeItem('pending_pdf_channel');
+            // Clean up localStorage
+            localStorage.removeItem('pending_pdf_channel');
+          });
       }
     }
   }, []);
