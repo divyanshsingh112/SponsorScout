@@ -52,6 +52,8 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         return String(val);
       };
 
+      const fallbackPitch = `${cachedData.channelName || 'Unknown Channel'}'s authority in the ${cachedData.niche || 'Tech'} space is heavily reinforced by recent high-performing videos. This active interest perfectly mirrors the target sponsor's core value proposition. Consequently, their highly engaged, pre-qualified viewer base represents an ideal cohort primed for immediate conversion.`;
+
       const templateData = {
         // Universal / New Keys (Formatted for Premium PDF look)
         channelName: cachedData.channelName || 'Unknown Channel',
@@ -63,6 +65,7 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         integrationFormat: cachedData.integrationFormat ?? cachedData.integrationType ?? '60-sec shoutout',
         calculatedCpm: formatNumber(rawCalculatedCpm),
         finalValuation: formatNumber(rawFinalValuation),
+        alignmentText: cachedData.alignmentText || fallbackPitch,
 
         // Legacy / Standard Keys for compatibility/fallback
         subscriberCount: formatNumber(rawSubscribers),

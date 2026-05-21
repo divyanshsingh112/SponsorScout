@@ -76,7 +76,7 @@ export const fetchAndCalculateStats = async (channelId: string) => {
       engagementRate = ((totalLikes + totalComments) / averageViews) * 100;
     }
 
-    const recentVideos = videos.slice(0, 3).map((video) => ({
+    const recentVideos = videos.slice(0, 5).map((video) => ({
       title: video.snippet?.title || 'Unknown Video',
       viewCount: video.statistics?.viewCount || '0',
     }));

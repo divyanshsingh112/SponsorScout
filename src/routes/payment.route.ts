@@ -1,5 +1,8 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { PaymentService } from '../services/payment.service';
+import { fetchAndCalculateStats } from '../services/youtube.service';
+import { getCachedChannel } from '../services/redis.service';
+import { generateAlignmentPitch } from '../services/ai.service';
 
 interface PayBody {
   channelId: string;
@@ -56,6 +59,9 @@ const paymentRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     finalValuation?: number;
     channelAvatarUrl?: string;
     recentVideos?: any[];
+    brandName?: string;
+    audienceGeo?: string;
+    integrationType?: string;
   }
 
   fastify.post<{ Body: UnlockBody }>('/api/unlock-channel', async (request, reply) => {
@@ -70,7 +76,39 @@ const paymentRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     }
 
     try {
-      await PaymentService.unlockChannel(channelId, additionalData);
+      // 1. Fetch cached data to check/extract channel info
+      let cachedData = await getCachedChannel(channelId);
+      let recentVideos = cachedData?.recentVideos || additionalData?.recentVideos || [];
+      let channelName = cachedData?.channelName || additionalData?.channelName || 'Unknown Channel';
+      let niche = cachedData?.niche || 'Tech';
+      let targetSponsor = additionalData?.targetSponsor || cachedData?.targetSponsor || cachedData?.brandName || additionalData?.brandName || 'Sponsor Brand';
+
+      // 2. Fetch/update from YouTube API if cached data is missing or doesn't have 5 recent videos
+      if (!cachedData || recentVideos.length < 5) {
+        try {
+          const freshStats = await fetchAndCalculateStats(channelId);
+          recentVideos = freshStats.recentVideos;
+          channelName = freshStats.channelName;
+          // Merge freshStats into additionalData to ensure it gets cached
+          Object.assign(additionalData, freshStats);
+        } catch (youtubeErr: any) {
+          fastify.log.warn(`[YouTube Sync Warning] Failed to fetch fresh YouTube stats in unlock-channel: ${youtubeErr.message || youtubeErr}`);
+        }
+      }
+
+      // 3. Extract recent video titles
+      const recentVideoTitles = recentVideos.slice(0, 5).map((v: any) => v.title || 'Unknown Video');
+
+      // 4. Generate the AI Alignment Pitch
+      const alignmentText = await generateAlignmentPitch(channelName, niche, targetSponsor, recentVideoTitles);
+
+      // 5. Attach alignmentText to the final payload to merge in cache
+      const finalPayload = {
+        ...additionalData,
+        alignmentText,
+      };
+
+      await PaymentService.unlockChannel(channelId, finalPayload);
       return reply.send({ success: true, message: 'Media Kit unlocked successfully' });
     } catch (error: any) {
       return reply.status(500).send({ error: error.message });
