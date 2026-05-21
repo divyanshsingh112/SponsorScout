@@ -336,7 +336,7 @@ function App() {
             }}
             className="group px-8 py-4 sm:py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:via-purple-500 hover:to-pink-500 text-white rounded-2xl font-extrabold text-base sm:text-lg tracking-wide shadow-2xl shadow-indigo-500/30 hover:shadow-indigo-500/40 transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center space-x-3 cursor-pointer"
           >
-            <span>Calculate Your Worth (Free Beta)</span>
+            <span>Calculate Your Worth (Beta)</span>
             <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
