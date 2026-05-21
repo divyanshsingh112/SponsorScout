@@ -5,7 +5,7 @@ import CheckoutInterstitial from './components/CheckoutInterstitial';
 import ClaimFallback from './components/ClaimFallback';
 import PitchDeckWizard from './components/PitchDeckWizard';
 
-interface ChannelData {
+export interface ChannelData {
   channelId: string;
   channelName: string;
   averageViews: number;
@@ -39,6 +39,16 @@ const getInitialWizardValues = () => {
     audienceGeo: 'Tier 3 India/Asia',
     brandName: '',
     integrationType: '60-sec shoutout',
+    platform: 'youtube',
+    totalFollowers: '',
+    accountsReached30d: '',
+    avgReelPlays: '',
+    avgStoryViews: '',
+    topLocation: 'Tier 3',
+    topAgeRange: '',
+    genderSplit: '',
+    sponsorNiche: 'Tech & Gadgets',
+    recentContentFocus: ''
   };
 };
 
@@ -52,9 +62,21 @@ function App() {
   const [selectedBrand, setSelectedBrand] = useState(initialValues.brandName);
   const [selectedIntegration, setSelectedIntegration] = useState(initialValues.integrationType);
 
+  // Instagram platform specific states
+  const [platform, setPlatform] = useState(initialValues.platform || 'youtube');
+  const [totalFollowers, setTotalFollowers] = useState(initialValues.totalFollowers || '');
+  const [accountsReached30d, setAccountsReached30d] = useState(initialValues.accountsReached30d || '');
+  const [avgReelPlays, setAvgReelPlays] = useState(initialValues.avgReelPlays || '');
+  const [avgStoryViews, setAvgStoryViews] = useState(initialValues.avgStoryViews || '');
+  const [topLocation, setTopLocation] = useState(initialValues.topLocation || 'Tier 3');
+  const [topAgeRange, setTopAgeRange] = useState(initialValues.topAgeRange || '');
+  const [genderSplit, setGenderSplit] = useState(initialValues.genderSplit || '');
+  const [sponsorNiche, setSponsorNiche] = useState(initialValues.sponsorNiche || 'Tech & Gadgets');
+  const [recentContentFocus, setRecentContentFocus] = useState(initialValues.recentContentFocus || '');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [channelData, setChannelData] = useState<ChannelData | null>(null);
+  const [channelData, setChannelData] = useState<any | null>(null);
 
   // Navigation state
   const [view, setView] = useState<'home' | 'checkout-interstitial' | 'claim-fallback'>('home');
@@ -114,16 +136,29 @@ function App() {
     const pitchDeckData = {
       channelId,
       channelName: channelData?.channelName || 'Unknown Channel',
-      subscribers: channelData?.channelStatistics?.subscriberCount || 'N/A',
-      avgViews: channelData?.averageViews || 0,
-      engagement: channelData?.engagementRate || 0,
+      subscribers: channelData?.channelStatistics?.subscriberCount || channelData?.subscribers || 'N/A',
+      avgViews: channelData?.averageViews || channelData?.avgViews || 0,
+      engagement: channelData?.engagementRate || channelData?.engagement || 0,
       targetSponsor: selectedBrand,
-      targetRegion: selectedGeo,
+      targetRegion: platform === 'instagram' ? topLocation : selectedGeo,
       integrationFormat: selectedIntegration,
       calculatedCpm: channelData?.cpm || 0,
-      finalValuation: channelData?.calculated_sponsor_fee_inr || 0,
+      finalValuation: channelData?.calculated_sponsor_fee_inr || channelData?.finalValuation || 0,
       channelAvatarUrl: channelData?.channelAvatarUrl || '',
-      recentVideos: channelData?.recentVideos || []
+      recentVideos: channelData?.recentVideos || [],
+      // Instagram fields
+      platform,
+      totalFollowers: channelData?.totalFollowers || totalFollowers,
+      accountsReached30d: channelData?.accountsReached30d || accountsReached30d,
+      avgReelPlays: channelData?.avgReelPlays || avgReelPlays,
+      avgStoryViews: channelData?.avgStoryViews || avgStoryViews,
+      topLocation: channelData?.topLocation || topLocation,
+      topAgeRange: channelData?.topAgeRange || topAgeRange,
+      genderSplit: channelData?.genderSplit || genderSplit,
+      sponsorNiche: channelData?.sponsorNiche || sponsorNiche,
+      recentContentFocus: channelData?.recentContentFocus || recentContentFocus,
+      reelValuation: channelData?.reelValuation,
+      storyValuation: channelData?.storyValuation,
     };
     localStorage.setItem('pending_pitch_deck_data', JSON.stringify(pitchDeckData));
     
@@ -133,7 +168,17 @@ function App() {
       niche: selectedNiche,
       audienceGeo: selectedGeo,
       brandName: selectedBrand,
-      integrationType: selectedIntegration
+      integrationType: selectedIntegration,
+      platform,
+      totalFollowers,
+      accountsReached30d,
+      avgReelPlays,
+      avgStoryViews,
+      topLocation,
+      topAgeRange,
+      genderSplit,
+      sponsorNiche,
+      recentContentFocus
     };
     localStorage.setItem('pending_pdf_channel_data', JSON.stringify(data));
     
@@ -192,6 +237,16 @@ function App() {
             audienceGeo: selectedGeo,
             brandName: selectedBrand,
             integrationType: selectedIntegration,
+            platform,
+            totalFollowers,
+            accountsReached30d,
+            avgReelPlays,
+            avgStoryViews,
+            topLocation,
+            topAgeRange,
+            genderSplit,
+            sponsorNiche,
+            recentContentFocus,
           }}
           onEvaluate={async (wizardData) => {
             // Keep app local state synchronized
@@ -200,6 +255,16 @@ function App() {
             setSelectedGeo(wizardData.audienceGeo);
             setSelectedBrand(wizardData.brandName);
             setSelectedIntegration(wizardData.integrationType);
+            setPlatform(wizardData.platform);
+            setTotalFollowers(wizardData.totalFollowers || '');
+            setAccountsReached30d(wizardData.accountsReached30d || '');
+            setAvgReelPlays(wizardData.avgReelPlays || '');
+            setAvgStoryViews(wizardData.avgStoryViews || '');
+            setTopLocation(wizardData.topLocation || 'Tier 3');
+            setTopAgeRange(wizardData.topAgeRange || '');
+            setGenderSplit(wizardData.genderSplit || '');
+            setSponsorNiche(wizardData.sponsorNiche || 'Tech & Gadgets');
+            setRecentContentFocus(wizardData.recentContentFocus || '');
 
             setLoading(true);
             setError('');
@@ -213,6 +278,16 @@ function App() {
                 audienceGeo: wizardData.audienceGeo,
                 brandName: wizardData.brandName,
                 integrationType: wizardData.integrationType,
+                platform: wizardData.platform,
+                totalFollowers: wizardData.totalFollowers ? Number(wizardData.totalFollowers) : undefined,
+                accountsReached30d: wizardData.accountsReached30d ? Number(wizardData.accountsReached30d) : undefined,
+                avgReelPlays: wizardData.avgReelPlays ? Number(wizardData.avgReelPlays) : undefined,
+                avgStoryViews: wizardData.avgStoryViews ? Number(wizardData.avgStoryViews) : undefined,
+                topLocation: wizardData.topLocation,
+                topAgeRange: wizardData.topAgeRange,
+                genderSplit: wizardData.genderSplit,
+                sponsorNiche: wizardData.sponsorNiche,
+                recentContentFocus: wizardData.recentContentFocus,
               });
               setChannelData(res.data);
             } catch (err: any) {
@@ -253,16 +328,28 @@ function App() {
                   {/* Channels stats badge row */}
                   <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-3 text-xs text-slate-400 font-medium">
                     <div className="flex items-center space-x-1.5 bg-slate-950/40 px-3 py-1.5 rounded-lg border border-slate-800/40">
-                      <span className="text-slate-500">Subscribers:</span>
-                      <span className="text-indigo-400 font-bold">{Number(channelData.channelStatistics.subscriberCount).toLocaleString()}</span>
+                      <span className="text-slate-500">{platform === 'instagram' ? 'Followers:' : 'Subscribers:'}</span>
+                      <span className="text-indigo-400 font-bold">
+                        {platform === 'instagram'
+                          ? Number(channelData.totalFollowers || totalFollowers).toLocaleString()
+                          : Number(channelData.channelStatistics?.subscriberCount || channelData.subscribers).toLocaleString()}
+                      </span>
                     </div>
                     <div className="flex items-center space-x-1.5 bg-slate-950/40 px-3 py-1.5 rounded-lg border border-slate-800/40">
-                      <span className="text-slate-500">Avg. Views:</span>
-                      <span className="text-purple-400 font-bold">{channelData.averageViews.toLocaleString()}</span>
+                      <span className="text-slate-500">{platform === 'instagram' ? 'Avg. Reels Plays:' : 'Avg. Views:'}</span>
+                      <span className="text-purple-400 font-bold">
+                        {platform === 'instagram'
+                          ? Number(channelData.avgReelPlays || avgReelPlays).toLocaleString()
+                          : channelData.averageViews.toLocaleString()}
+                      </span>
                     </div>
                     <div className="flex items-center space-x-1.5 bg-slate-950/40 px-3 py-1.5 rounded-lg border border-slate-800/40">
                       <span className="text-slate-500">Engagement:</span>
-                      <span className="text-pink-400 font-bold">{channelData.engagementRate}%</span>
+                      <span className="text-pink-400 font-bold">
+                        {platform === 'instagram'
+                          ? `${channelData.engagementRate || channelData.engagement || 0}%`
+                          : `${channelData.engagementRate}%`}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -282,7 +369,7 @@ function App() {
                   <Globe className="h-4 w-4 text-indigo-400 mt-0.5 shrink-0" />
                   <div>
                     <div className="text-slate-500 uppercase tracking-wider font-semibold text-[10px]">Target Region</div>
-                    <div className="text-slate-200 font-bold text-sm truncate">{channelData.audienceGeo || selectedGeo}</div>
+                    <div className="text-slate-200 font-bold text-sm truncate">{platform === 'instagram' ? (channelData.topLocation || topLocation) : (channelData.audienceGeo || selectedGeo)}</div>
                   </div>
                 </div>
 
@@ -298,7 +385,9 @@ function App() {
                   <Bookmark className="h-4 w-4 text-indigo-400 mt-0.5 shrink-0" />
                   <div>
                     <div className="text-slate-500 uppercase tracking-wider font-semibold text-[10px]">Calculated CPM</div>
-                    <div className="text-slate-200 font-bold text-sm">₹{channelData.cpm || 'TBD'}</div>
+                    <div className="text-slate-200 font-bold text-sm">
+                      {platform === 'instagram' ? '₹250 Reel / ₹150 Story' : `₹${channelData.cpm || 'TBD'}`}
+                    </div>
                   </div>
                 </div>
               </div>

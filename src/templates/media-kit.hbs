@@ -282,6 +282,20 @@
             <p>Exclusive Sponsorship Proposal for <span class="gradient-text" style="-webkit-text-fill-color: initial; font-weight: 800;">{{targetSponsor}}</span></p>
             
             <div class="stats-row">
+                {{#if isInstagram}}
+                <div class="stat-item">
+                    <div class="stat-val">{{totalFollowers}}</div>
+                    <div class="stat-lbl">Followers</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val">{{avgReelPlays}}</div>
+                    <div class="stat-lbl">Avg. Reels Plays</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val">{{engagement}}%</div>
+                    <div class="stat-lbl">Engagement</div>
+                </div>
+                {{else}}
                 <div class="stat-item">
                     <div class="stat-val">{{subscribers}}</div>
                     <div class="stat-lbl">Subscribers</div>
@@ -294,6 +308,7 @@
                     <div class="stat-val">{{engagement}}%</div>
                     <div class="stat-lbl">Engagement</div>
                 </div>
+                {{/if}}
             </div>
             
             <div class="fee-card">
@@ -324,7 +339,7 @@
             </p>
             
             <div class="highlight-box">
-                <h4>Why {{targetSponsor}} Fits Perfect inside {{niche}}</h4>
+                <h4>Strategic Alignment: {{targetSponsor}} & The {{niche}} Audience</h4>
                 <p>
                     {{alignmentText}}
                 </p>
@@ -377,6 +392,46 @@
                 The pricing model for this sponsorship placement is built directly upon empirical performance metrics. Below is the transparent breakdown of expected reach and value delivery.
             </p>
             
+            {{#if isInstagram}}
+            <table class="roi-table">
+                <thead>
+                    <tr>
+                        <th>Placement Format</th>
+                        <th>Reach / Base CPM</th>
+                        <th>Multipliers Applied</th>
+                        <th>Estimated Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Instagram Reel</strong></td>
+                        <td>{{avgReelPlays}} avg. plays / ₹250 CPM</td>
+                        <td>Geo: {{geoMultiplier}}x | Resonance: {{resonanceMultiplier}}x</td>
+                        <td><strong>₹{{reelValuation}} INR</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Instagram Story</strong></td>
+                        <td>{{avgStoryViews}} avg. views / ₹150 CPM</td>
+                        <td>Geo: {{geoMultiplier}}x | Resonance: {{resonanceMultiplier}}x</td>
+                        <td><strong>₹{{storyValuation}} INR</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Combined Campaign Total</strong></td>
+                        <td colspan="2">Reels & Stories Integrated Synergy</td>
+                        <td><strong>₹{{finalValuation}} INR</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="formula-box">
+                Instagram Valuation Formula:<br>
+                Reel = (Plays * 250 * Geo * Resonance) / 1000 | Story = (Views * 150 * Geo * Resonance) / 1000
+            </div>
+
+            <div style="font-size: 10px; color: #94a3b8; line-height: 1.5; margin-top: 30px; text-align: center; font-style: italic; border-top: 1px dashed #e2e8f0; padding-top: 15px;">
+                Data self-reported by creator via Instagram Professional Dashboard. SponsorScout recommends requesting live dashboard screenshots before contract finalization.
+            </div>
+            {{else}}
             <table class="roi-table">
                 <thead>
                     <tr>
@@ -416,6 +471,7 @@
                 Placement Valuation Formula:<br>
                 Valuation = (Average Views * Effective CPM) / 1,000
             </div>
+            {{/if}}
         </div>
         
         <div class="page-footer">

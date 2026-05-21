@@ -63,3 +63,29 @@ export function cpmCalculator(niche: string, audienceGeo: string, integrationTyp
     integrationMultiplier
   };
 }
+
+/**
+ * Calculates a dynamic resonance multiplier based on Creator Niche vs Sponsor Niche alignment.
+ * Exact match = 1.5x
+ * Adjacent match = 1.0x (e.g. Tech & Gadgets is adjacent to Finance & Crypto and Gaming; Lifestyle & Vlog is adjacent to Beauty & Fashion)
+ * Poor match = 0.7x
+ */
+export function getResonanceMultiplier(creatorNiche: string, sponsorNiche: string): number {
+  const c = creatorNiche.trim().toLowerCase();
+  const s = sponsorNiche.trim().toLowerCase();
+  if (c === s) return 1.5;
+
+  const adjacentMap: Record<string, string[]> = {
+    'tech & gadgets': ['finance & crypto', 'gaming'],
+    'finance & crypto': ['tech & gadgets'],
+    'gaming': ['tech & gadgets'],
+    'lifestyle & vlog': ['beauty & fashion'],
+    'beauty & fashion': ['lifestyle & vlog']
+  };
+
+  if (adjacentMap[c] && adjacentMap[c].includes(s)) {
+    return 1.0;
+  }
+  return 0.7;
+}
+

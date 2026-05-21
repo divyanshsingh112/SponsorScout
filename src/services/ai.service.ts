@@ -20,16 +20,32 @@ export async function generateAlignmentPitch(
   channelName: string,
   niche: string,
   targetSponsor: string,
-  recentVideoTitles: string[]
+  recentVideoTitlesOrContentFocus: string[] | string,
+  platform: string = 'youtube'
 ): Promise<string> {
-  const titlesString = recentVideoTitles.map((t) => `"${t}"`).join(', ');
-
-  const systemPrompt = `You are an elite B2B media buyer. Write exactly 3 sentences (maximum 45 words) explaining why [Channel Name]'s recent videos about [Video Titles] make their [Niche] audience perfectly primed to buy products from [Target Sponsor]. Be highly persuasive. Do not include any introductory or concluding conversational text. Output only the 3 sentences.`;
-
-  const userPrompt = `Channel Name: ${channelName}
+  const isInstagram = platform === 'instagram';
+  
+  let systemPrompt = '';
+  let userPrompt = '';
+  
+  if (isInstagram) {
+    systemPrompt = `You are an elite B2B media buyer. Write exactly 3 sentences (maximum 45 words) explaining why [Creator Name]'s recent visual content pillars about [Recent Content Focus] make their [Niche] audience perfectly primed to buy products from [Target Sponsor]. Be highly persuasive. Do not include any introductory or concluding conversational text. Output only the 3 sentences.`;
+    userPrompt = `Creator Name: ${channelName}
+Niche: ${niche}
+Target Sponsor: ${targetSponsor}
+Recent Content Focus: ${recentVideoTitlesOrContentFocus}`;
+  } else {
+    const titlesArray = Array.isArray(recentVideoTitlesOrContentFocus)
+      ? recentVideoTitlesOrContentFocus
+      : [recentVideoTitlesOrContentFocus];
+    const titlesString = titlesArray.map((t) => `"${t}"`).join(', ');
+    
+    systemPrompt = `You are an elite B2B media buyer. Write exactly 3 sentences (maximum 45 words) explaining why [Channel Name]'s recent videos about [Video Titles] make their [Niche] audience perfectly primed to buy products from [Target Sponsor]. Be highly persuasive. Do not include any introductory or concluding conversational text. Output only the 3 sentences.`;
+    userPrompt = `Channel Name: ${channelName}
 Niche: ${niche}
 Target Sponsor: ${targetSponsor}
 Video Titles: ${titlesString}`;
+  }
 
   try {
     if (!process.env.GROQ_API_KEY) {
@@ -55,7 +71,16 @@ Video Titles: ${titlesString}`;
   } catch (error: any) {
     console.error('⚠️ [AI Error] Groq API completion failed. Using high-converting fallback pitch. Details:', error.message || error);
     
-    // Premium fallback pitch aligning precisely with the parameters
-    return `${channelName}'s authority in the ${niche} space is heavily reinforced by recent high-performing videos covering topics like ${recentVideoTitles.slice(0, 2).map((t) => `"${t}"`).join(' and ')}. This active interest perfectly mirrors ${targetSponsor}'s core value proposition and product advantages. Consequently, their highly engaged, pre-qualified viewer base represents an ideal cohort primed for immediate conversion.`;
+    if (isInstagram) {
+      const focusText = typeof recentVideoTitlesOrContentFocus === 'string'
+        ? recentVideoTitlesOrContentFocus
+        : String(recentVideoTitlesOrContentFocus);
+      return `${channelName}'s highly visually engaged audience of followers is perfectly primed for ${targetSponsor} through dynamic Instagram content. By aligning strategic product integrations across highly-retained Reels covering "${focusText}" and interactive Stories, we capture maximum attention. This targeted focus delivers an exceptionally pre-qualified cohort primed for immediate action and high-converting B2B brand affinity.`;
+    } else {
+      const titlesArray = Array.isArray(recentVideoTitlesOrContentFocus)
+        ? recentVideoTitlesOrContentFocus
+        : [recentVideoTitlesOrContentFocus];
+      return `${channelName}'s authority in the ${niche} space is heavily reinforced by recent high-performing videos covering topics like ${titlesArray.slice(0, 2).map((t) => `"${t}"`).join(' and ')}. This active interest perfectly mirrors ${targetSponsor}'s core value proposition and product advantages. Consequently, their highly engaged, pre-qualified viewer base represents an ideal cohort primed for immediate conversion.`;
+    }
   }
 }

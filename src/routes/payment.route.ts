@@ -62,6 +62,20 @@ const paymentRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     brandName?: string;
     audienceGeo?: string;
     integrationType?: string;
+    // Instagram specific fields
+    platform?: string;
+    totalFollowers?: number;
+    accountsReached30d?: number;
+    avgReelPlays?: number;
+    avgStoryViews?: number;
+    topLocation?: string;
+    topAgeRange?: string;
+    genderSplit?: string;
+    sponsorNiche?: string;
+    recentContentFocus?: string;
+    reelValuation?: number;
+    storyValuation?: number;
+    niche?: string;
   }
 
   fastify.post<{ Body: UnlockBody }>('/api/unlock-channel', async (request, reply) => {
@@ -78,13 +92,14 @@ const paymentRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     try {
       // 1. Fetch cached data to check/extract channel info
       let cachedData = await getCachedChannel(channelId);
+      const platform = additionalData.platform || cachedData?.platform || 'youtube';
       let recentVideos = cachedData?.recentVideos || additionalData?.recentVideos || [];
       let channelName = cachedData?.channelName || additionalData?.channelName || 'Unknown Channel';
-      let niche = cachedData?.niche || 'Tech';
+      let niche = cachedData?.niche || additionalData?.niche || 'Tech';
       let targetSponsor = additionalData?.targetSponsor || cachedData?.targetSponsor || cachedData?.brandName || additionalData?.brandName || 'Sponsor Brand';
 
-      // 2. Fetch/update from YouTube API if cached data is missing or doesn't have 5 recent videos
-      if (!cachedData || recentVideos.length < 5) {
+      // 2. Fetch/update from YouTube API if cached data is missing or doesn't have 5 recent videos (only for YouTube)
+      if (platform !== 'instagram' && (!cachedData || recentVideos.length < 5)) {
         try {
           const freshStats = await fetchAndCalculateStats(channelId);
           recentVideos = freshStats.recentVideos;
@@ -96,13 +111,17 @@ const paymentRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         }
       }
 
-      // 3. Extract recent video titles
-      const recentVideoTitles = recentVideos.slice(0, 5).map((v: any) => v.title || 'Unknown Video');
+      // 3. Generate the AI Alignment Pitch
+      let alignmentText = '';
+      if (platform === 'instagram') {
+        const recentContentFocus = additionalData?.recentContentFocus || cachedData?.recentContentFocus || '';
+        alignmentText = await generateAlignmentPitch(channelName, niche, targetSponsor, recentContentFocus, 'instagram');
+      } else {
+        const recentVideoTitles = recentVideos.slice(0, 5).map((v: any) => v.title || 'Unknown Video');
+        alignmentText = await generateAlignmentPitch(channelName, niche, targetSponsor, recentVideoTitles, 'youtube');
+      }
 
-      // 4. Generate the AI Alignment Pitch
-      const alignmentText = await generateAlignmentPitch(channelName, niche, targetSponsor, recentVideoTitles);
-
-      // 5. Attach alignmentText to the final payload to merge in cache
+      // 4. Attach alignmentText to the final payload to merge in cache
       const finalPayload = {
         ...additionalData,
         alignmentText,
