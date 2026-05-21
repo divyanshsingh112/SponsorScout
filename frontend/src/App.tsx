@@ -386,7 +386,7 @@ function App() {
                   <div>
                     <div className="text-slate-500 uppercase tracking-wider font-semibold text-[10px]">Calculated CPM</div>
                     <div className="text-slate-200 font-bold text-sm">
-                      {platform === 'instagram' ? '₹250 Reel / ₹150 Story' : `₹${channelData.cpm || 'TBD'}`}
+                      {platform === 'instagram' ? '₹100 Reel / ₹200 Story' : `₹${channelData.cpm || 'TBD'}`}
                     </div>
                   </div>
                 </div>

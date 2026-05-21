@@ -88,8 +88,8 @@ const valuationRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => 
         }
 
         // Instagram valuations
-        const reelValuation = Math.round((avgReelPlays * 250 * geoMultiplier * resonanceMultiplier) / 1000);
-        const storyValuation = Math.round((avgStoryViews * 150 * geoMultiplier * resonanceMultiplier) / 1000);
+        const reelValuation = Math.round((avgReelPlays * 100 * geoMultiplier * resonanceMultiplier) / 1000);
+        const storyValuation = Math.round((avgStoryViews * 200 * geoMultiplier * resonanceMultiplier) / 1000);
         const calculated_sponsor_fee_inr = reelValuation + storyValuation;
 
         // Map stats to unify with YouTube keys for frontend components
