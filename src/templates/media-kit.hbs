@@ -2,182 +2,427 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Media Kit - {{channelName}}</title>
+    <title>Sponsorship Proposal - {{channelName}}</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+        
+        * {
+            box-sizing: border-box;
+        }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Outfit', sans-serif;
             margin: 0;
-            padding: 40px;
-            color: #333;
-            background-color: #f9f9fb;
+            padding: 0;
+            color: #0f172a;
+            background-color: #f8fafc;
+            -webkit-print-color-adjust: exact;
         }
-        .container {
-            max-width: 800px;
+        .page {
+            width: 210mm;
+            height: 297mm;
+            padding: 25mm 20mm;
             margin: 0 auto;
-            background: #fff;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            background: #ffffff;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
         }
-        .header {
-            text-align: center;
-            border-bottom: 2px solid #eaeaea;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+        .page-break {
+            page-break-after: always;
+            break-after: page;
         }
-        .avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 3px solid #eaeaea;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin-bottom: 15px;
-        }
-        .header h1 {
+        
+        /* Typography details */
+        h1, h2, h3 {
             margin: 0;
-            font-size: 32px;
-            color: #1a1a1a;
+            color: #1e1b4b;
         }
-        .header p {
-            color: #666;
-            font-size: 16px;
-            margin-top: 8px;
+        .gradient-text {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .stats-grid {
+        
+        /* Page Header component */
+        .page-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 40px;
-        }
-        .stat-box {
-            flex: 1;
-            text-align: center;
-            padding: 20px;
-            background: #f0f4f8;
-            border-radius: 8px;
-            margin: 0 10px;
-        }
-        .stat-box:first-child { margin-left: 0; }
-        .stat-box:last-child { margin-right: 0; }
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-        .stat-label {
-            font-size: 14px;
-            color: #7f8c8d;
-            margin-top: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .fee-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 8px 15px rgba(118, 75, 162, 0.2);
-        }
-        .fee-label {
-            font-size: 18px;
-            opacity: 0.9;
-        }
-        .fee-value {
-            font-size: 48px;
-            font-weight: 800;
-            margin-top: 10px;
-        }
-        .proof-section {
-            margin-top: 40px;
+            align-items: center;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 15px;
             margin-bottom: 30px;
         }
-        .proof-title {
-            font-size: 20px;
-            color: #1a1a1a;
-            border-bottom: 2px solid #eaeaea;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
+        .page-header .brand {
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #4f46e5;
         }
-        .proof-table {
+        .page-header .page-num {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        /* Page Footer component */
+        .page-footer {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 15px;
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #64748b;
+        }
+        
+        /* PAGE 1: EXECUTIVE SUMMARY STYLES */
+        .hero {
+            text-align: center;
+            margin: 40px 0;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            border: 4px solid #e2e8f0;
+            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.15);
+            margin-bottom: 20px;
+            object-fit: cover;
+        }
+        .hero h1 {
+            font-size: 38px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+        }
+        .hero p {
+            color: #64748b;
+            font-size: 18px;
+            margin: 0 0 35px 0;
+        }
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 45px;
+            gap: 15px;
+        }
+        .stat-item {
+            flex: 1;
+            padding: 16px;
+            background: #fafafa;
+            border: 1px solid #f1f5f9;
+            border-radius: 16px;
+            text-align: center;
+        }
+        .stat-val {
+            font-size: 22px;
+            font-weight: 800;
+            color: #4f46e5;
+        }
+        .stat-lbl {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+        .fee-card {
+            background: linear-gradient(135deg, #1e1b4b 0%, #311042 100%);
+            color: #ffffff;
+            width: 100%;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px -15px rgba(30, 27, 75, 0.25);
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .fee-card .lbl {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #a5b4fc;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .fee-card .val {
+            font-size: 42px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+        
+        /* PAGE 2: ALIGNMENT STYLES */
+        .content-body {
+            flex-grow: 1;
+        }
+        .section-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            border-left: 4px solid #4f46e5;
+            padding-left: 12px;
+        }
+        .intro-text {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #475569;
+            margin-bottom: 30px;
+        }
+        .highlight-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        .highlight-box h4 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e1b4b;
+        }
+        .highlight-box p {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #64748b;
+        }
+        .bullets {
+            margin-top: 25px;
+        }
+        .bullet-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 18px;
+        }
+        .bullet-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4f46e5;
+            margin-top: 6px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .bullet-content {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #334155;
+        }
+        .bullet-content strong {
+            color: #1e1b4b;
+        }
+        
+        /* PAGE 3: ROI STYLES */
+        .roi-table {
             width: 100%;
             border-collapse: collapse;
+            margin: 30px 0;
         }
-        .proof-table td {
-            padding: 12px 8px;
-            border-bottom: 1px solid #f0f4f8;
+        .roi-table th {
+            text-align: left;
+            padding: 16px 20px;
+            background: #f1f5f9;
+            color: #1e1b4b;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #e2e8f0;
         }
-        .video-title {
-            color: #333;
-            font-weight: 500;
-            max-width: 450px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .roi-table td {
+            padding: 18px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+            color: #334155;
         }
-        .video-views {
-            color: #7f8c8d;
-            text-align: right;
-            font-weight: bold;
+        .roi-table tr:last-child td {
+            border-bottom: none;
+            font-weight: 800;
+            background: #fafafa;
         }
-        .footer {
-            margin-top: 40px;
+        .formula-box {
+            background: #eef2ff;
+            border: 1px dashed #c7d2fe;
+            border-radius: 16px;
+            padding: 20px;
             text-align: center;
-            font-size: 12px;
-            color: #a0a0a0;
-            border-top: 1px solid #eaeaea;
-            padding-top: 20px;
+            font-size: 13px;
+            color: #3730a3;
+            font-family: monospace;
+            margin-top: 30px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+
+    <!-- PAGE 1: COVER & EXECUTIVE SUMMARY -->
+    <div class="page">
+        <div class="page-header">
+            <span class="brand">SponsorScout Proposals</span>
+            <span class="page-num">01 / 03</span>
+        </div>
+        
+        <div class="hero">
             {{#if channelAvatarUrl}}
             <img src="{{channelAvatarUrl}}" alt="{{channelName}}" class="avatar">
             {{/if}}
             <h1>{{channelName}}</h1>
-            <p>Official Media & Sponsorship Kit</p>
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-box">
-                <div class="stat-value">{{subscriberCount}}</div>
-                <div class="stat-label">Subscribers</div>
+            <p>Exclusive Sponsorship Proposal for <span class="gradient-text" style="-webkit-text-fill-color: initial; font-weight: 800;">{{brandName}}</span></p>
+            
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-val">{{subscriberCount}}</div>
+                    <div class="stat-lbl">Subscribers</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val">{{averageViews}}</div>
+                    <div class="stat-lbl">Avg. Views</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val">{{engagementRate}}%</div>
+                    <div class="stat-lbl">Engagement</div>
+                </div>
             </div>
-            <div class="stat-box">
-                <div class="stat-value">{{averageViews}}</div>
-                <div class="stat-label">Avg. Views</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value">{{engagementRate}}%</div>
-                <div class="stat-label">Engagement</div>
+            
+            <div class="fee-card">
+                <div class="lbl">Recommended Placement Fee</div>
+                <div class="val">₹{{suggestedFee}}</div>
             </div>
         </div>
-
-        <div class="fee-section">
-            <div class="fee-label">Suggested Sponsorship Fee (INR)</div>
-            <div class="fee-value">₹{{suggestedFee}}</div>
-        </div>
-
-        {{#if recentVideos}}
-        <div class="proof-section">
-            <h3 class="proof-title">Recent Performance Proof</h3>
-            <table class="proof-table">
-                <tbody>
-                    {{#each recentVideos}}
-                    <tr>
-                        <td class="video-title">{{this.title}}</td>
-                        <td class="video-views">{{this.viewCount}} views</td>
-                    </tr>
-                    {{/each}}
-                </tbody>
-            </table>
-        </div>
-        {{/if}}
-
-        <div class="footer">
-            Generated by SponsorScout on {{currentDate}}. Pricing metrics calibrated to real-time Indian {{niche}} market rates.
+        
+        <div class="page-footer">
+            <span>Calibrated: {{currentDate}}</span>
+            <span>Target placement: {{integrationType}}</span>
         </div>
     </div>
+    
+    <div class="page-break"></div>
+
+    <!-- PAGE 2: BRAND & NICHE ALIGNMENT -->
+    <div class="page">
+        <div class="page-header">
+            <span class="brand">Alignment Strategy</span>
+            <span class="page-num">02 / 03</span>
+        </div>
+        
+        <div class="content-body">
+            <h2 class="section-title">Niche & Brand Resonance</h2>
+            <p class="intro-text">
+                This document structures a high-conversion alignment model between the content ecosystem of <strong>{{channelName}}</strong> and the promotional goals of <strong>{{brandName}}</strong>. By blending organic contextual integration with targeted consumer focus, we ensure campaign success.
+            </p>
+            
+            <div class="highlight-box">
+                <h4>Why {{brandName}} Fits Perfect inside {{niche}}</h4>
+                <p>
+                    {{channelName}} operates as an authoritative voice in the <strong>{{niche}}</strong> space. Audiences actively seek niche-specific reviews, insights, and recommendations from this creator, resulting in a pre-qualified demographic uniquely primed for <strong>{{brandName}}</strong> offerings.
+                </p>
+            </div>
+            
+            <div class="bullets">
+                <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 15px; color: #1e1b4b;">Critical Campaign Synergies</h3>
+                
+                <div class="bullet-item">
+                    <div class="bullet-dot"></div>
+                    <div class="bullet-content">
+                        <strong>Audience Geo Reach:</strong> Primarily targeting users in <strong>{{audienceGeo}}</strong>, capturing highly responsive local cohorts.
+                    </div>
+                </div>
+                
+                <div class="bullet-item">
+                    <div class="bullet-dot"></div>
+                    <div class="bullet-content">
+                        <strong>Native Delivery Focus:</strong> Utilizing a tailored <strong>{{integrationType}}</strong> placement format to maximize viewer retention without breaking editorial flow.
+                    </div>
+                </div>
+                
+                <div class="bullet-item">
+                    <div class="bullet-dot"></div>
+                    <div class="bullet-content">
+                        <strong>High-Trust Recommendation:</strong> Leverage creator trust to present product advantages seamlessly, turning passive viewers into brand advocates.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="page-footer">
+            <span>Proposal: {{channelName}} x {{brandName}}</span>
+            <span>Vertical: {{niche}}</span>
+        </div>
+    </div>
+    
+    <div class="page-break"></div>
+
+    <!-- PAGE 3: ROI PROJECTION & CPM MATH -->
+    <div class="page">
+        <div class="page-header">
+            <span class="brand">ROI Projection</span>
+            <span class="page-num">03 / 03</span>
+        </div>
+        
+        <div class="content-body">
+            <h2 class="section-title">Campaign ROI Projections</h2>
+            <p class="intro-text">
+                The pricing model for this sponsorship placement is built directly upon empirical performance metrics. Below is the transparent breakdown of expected reach and value delivery.
+            </p>
+            
+            <table class="roi-table">
+                <thead>
+                    <tr>
+                        <th>Metric Dimension</th>
+                        <th>Calibrated Baseline Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Expected Reach (Average Views)</td>
+                        <td><strong>{{averageViews}} views</strong> per video</td>
+                    </tr>
+                    <tr>
+                        <td>Dynamic Niche CPM (INR)</td>
+                        <td><strong>₹{{baseNicheCpm}}</strong> ({{niche}})</td>
+                    </tr>
+                    <tr>
+                        <td>Audience Location Multiplier</td>
+                        <td><strong>{{geoMultiplier}}x</strong> multiplier ({{audienceGeo}})</td>
+                    </tr>
+                    <tr>
+                        <td>Integration Format Multiplier</td>
+                        <td><strong>{{integrationMultiplier}}x</strong> multiplier ({{integrationType}})</td>
+                    </tr>
+                    <tr>
+                        <td>Effective Combined CPM</td>
+                        <td><strong>₹{{cpm}}</strong> per 1,000 views</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Final Calibrated Valuation</strong></td>
+                        <td><strong>₹{{suggestedFee}} INR</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="formula-box">
+                Placement Valuation Formula:<br>
+                Valuation = (Average Views * Effective CPM) / 1,000
+            </div>
+        </div>
+        
+        <div class="page-footer">
+            <span>Generated securely by SponsorScout</span>
+            <span>Strict Mathematical Evaluation</span>
+        </div>
+    </div>
+
 </body>
 </html>

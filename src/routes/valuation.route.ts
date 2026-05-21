@@ -1,57 +1,68 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { getCachedChannel, cacheChannel } from '../services/redis.service';
 import { fetchAndCalculateStats } from '../services/youtube.service';
+import { cpmCalculator } from '../utils/cpm';
 
 interface EvaluateChannelBody {
   channelId: string;
   niche: string;
+  audienceGeo: string;
+  brandName: string;
+  integrationType: string;
 }
 
 const valuationRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   fastify.post<{ Body: EvaluateChannelBody }>('/api/evaluate-channel', async (request, reply) => {
-    const { channelId, niche } = request.body;
+    const { channelId, niche, audienceGeo, brandName, integrationType } = request.body;
 
-    if (!channelId || !niche) {
-      return reply.status(400).send({ error: 'channelId and niche are required' });
+    if (!channelId || !niche || !audienceGeo || !brandName || !integrationType) {
+      return reply.status(400).send({ 
+        error: 'channelId, niche, audienceGeo, brandName, and integrationType are required' 
+      });
     }
 
     try {
-      // a. Check Redis cache
+      // a. Check Redis cache - check if all inputs match
       const cachedData = await getCachedChannel(channelId);
-      if (cachedData) {
+      if (
+        cachedData &&
+        cachedData.niche === niche &&
+        cachedData.audienceGeo === audienceGeo &&
+        cachedData.brandName === brandName &&
+        cachedData.integrationType === integrationType
+      ) {
         reply.header('X-Cache', 'HIT');
         return reply.send(cachedData);
       }
 
-      // b. Fetch from YouTube
+      // b. Fetch YouTube statistics
       const stats = await fetchAndCalculateStats(channelId);
 
-      // c. Indian Valuation Matrix
-      let baseRate = 0;
-      const normalizedNiche = niche.toLowerCase();
+      // c. Dynamic CPM matrix logic
+      const cpmResult = cpmCalculator(niche, audienceGeo, integrationType);
 
-      if (normalizedNiche.includes('tech')) baseRate = 250;
-      else if (normalizedNiche.includes('finance')) baseRate = 350;
-      else if (normalizedNiche.includes('gaming')) baseRate = 60;
-      else if (normalizedNiche.includes('lifestyle') || normalizedNiche.includes('vlog')) baseRate = 100;
-      else baseRate = 100; // Default baseline rate
+      // Calculate sponsor fee: averageViews * (cpm / 1000)
+      const calculated_sponsor_fee_inr = Math.max(0, Math.round(stats.averageViews * (cpmResult.cpm / 1000)));
 
-      // Calculate sponsor fee: averageViews * (baseRate / 1000)
-      const calculated_sponsor_fee_inr = Math.round(stats.averageViews * (baseRate / 1000));
-
-      // d. Structure final JSON object
+      // d. Structure final JSON object with comprehensive breakdown
       const finalObject = {
         ...stats,
         niche,
-        baseRate,
+        audienceGeo,
+        brandName,
+        integrationType,
+        cpm: cpmResult.cpm,
+        baseNicheCpm: cpmResult.baseNicheCpm,
+        geoMultiplier: cpmResult.geoMultiplier,
+        integrationMultiplier: cpmResult.integrationMultiplier,
         calculated_sponsor_fee_inr,
         evaluatedAt: new Date().toISOString(),
       };
 
-      // e. Cache in Redis (86400 TTL)
+      // e. Cache in Redis
       await cacheChannel(channelId, finalObject);
 
-      // f. Return JSON with X-Cache: MISS
+      // f. Return JSON
       reply.header('X-Cache', 'MISS');
       return reply.send(finalObject);
 

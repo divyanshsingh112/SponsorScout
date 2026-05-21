@@ -27,6 +27,13 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         recentVideos: cachedData.recentVideos || [],
         currentDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
         niche: cachedData.niche || 'Tech',
+        audienceGeo: cachedData.audienceGeo || 'Tier 3 India/Asia',
+        brandName: cachedData.brandName || 'Sponsor Brand',
+        integrationType: cachedData.integrationType || '60-sec shoutout',
+        cpm: cachedData.cpm || 100,
+        baseNicheCpm: cachedData.baseNicheCpm || 100,
+        geoMultiplier: cachedData.geoMultiplier || 1.0,
+        integrationMultiplier: cachedData.integrationMultiplier || 1.0,
       };
 
       const pdfBuffer = await generateMediaKit(templateData);

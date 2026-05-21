@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Loader2, Download, CheckCircle, Lock, AlertCircle } from 'lucide-react';
+import { Download, CheckCircle, Lock, AlertCircle, Sparkles, Globe, Target, Video, Bookmark } from 'lucide-react';
 import CheckoutInterstitial from './components/CheckoutInterstitial';
 import ClaimFallback from './components/ClaimFallback';
+import PitchDeckWizard from './components/PitchDeckWizard';
 
 interface ChannelData {
   channelId: string;
@@ -14,13 +15,43 @@ interface ChannelData {
   channelAvatarUrl?: string;
   recentVideos?: { title: string; viewCount: string }[];
   niche?: string;
+  audienceGeo?: string;
+  brandName?: string;
+  integrationType?: string;
+  cpm?: number;
 }
 
 const TOPMATE_URL = 'https://topmate.io/sponsorscout/2109766';
 
+// Helper to prefill last wizard state
+const getInitialWizardValues = () => {
+  try {
+    const saved = localStorage.getItem('pending_pdf_channel_data');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (e) {
+    console.error(e);
+  }
+  return {
+    channelId: '',
+    niche: 'Tech & Gadgets',
+    audienceGeo: 'Tier 3 India/Asia',
+    brandName: '',
+    integrationType: '60-sec shoutout',
+  };
+};
+
 function App() {
-  const [channelId, setChannelId] = useState('');
-  const [selectedNiche, setSelectedNiche] = useState('Tech & Gadgets');
+  const initialValues = getInitialWizardValues();
+
+  // Input states synchronized with the Wizard
+  const [channelId, setChannelId] = useState(initialValues.channelId);
+  const [selectedNiche, setSelectedNiche] = useState(initialValues.niche);
+  const [selectedGeo, setSelectedGeo] = useState(initialValues.audienceGeo);
+  const [selectedBrand, setSelectedBrand] = useState(initialValues.brandName);
+  const [selectedIntegration, setSelectedIntegration] = useState(initialValues.integrationType);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [channelData, setChannelData] = useState<ChannelData | null>(null);
@@ -63,30 +94,19 @@ function App() {
     }
   }, []);
 
-  const handleEvaluate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!channelId) return;
-
-    setLoading(true);
-    setError('');
-    setChannelData(null);
-    setPaymentStatus('idle');
-
-    try {
-      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/evaluate-channel`, {
-        channelId,
-        niche: selectedNiche
-      });
-      setChannelData(res.data);
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to evaluate channel. Check ID and try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleUnlock = () => {
     localStorage.setItem('pending_pdf_channel', channelId);
+    
+    // Ensure the full data block is serialized to storage
+    const data = {
+      channelId,
+      niche: selectedNiche,
+      audienceGeo: selectedGeo,
+      brandName: selectedBrand,
+      integrationType: selectedIntegration
+    };
+    localStorage.setItem('pending_pdf_channel_data', JSON.stringify(data));
+    
     setView('checkout-interstitial');
   };
 
@@ -130,42 +150,48 @@ function App() {
           Stop Guessing.<br />Know Your Worth.
         </h1>
         <p className="text-base md:text-xl text-slate-400 w-full max-w-2xl mx-auto mb-8 md:mb-12">
-          Generate an agency-grade Media Kit based on live Indian sponsorship rates.
+          Generate a premium, 3-page Agency Pitch Deck powered by dynamic CPM matrices.
         </p>
 
-        {/* Input Form */}
-        <form onSubmit={handleEvaluate} className="w-full max-w-xl mx-auto relative group flex flex-col gap-4">
-          <select
-            value={selectedNiche}
-            onChange={(e) => setSelectedNiche(e.target.value)}
-            className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 px-4 text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all cursor-pointer hover:bg-slate-800/50 text-sm md:text-base appearance-none"
-          >
-            <option value="Tech & Gadgets">Tech & Gadgets</option>
-            <option value="Finance & Crypto">Finance & Crypto</option>
-            <option value="Gaming">Gaming</option>
-            <option value="Lifestyle & Vlog">Lifestyle & Vlog</option>
-          </select>
+        {/* Dynamic Multi-Step Wizard Input */}
+        <PitchDeckWizard
+          loading={loading}
+          initialValues={{
+            channelId,
+            niche: selectedNiche,
+            audienceGeo: selectedGeo,
+            brandName: selectedBrand,
+            integrationType: selectedIntegration,
+          }}
+          onEvaluate={async (wizardData) => {
+            // Keep app local state synchronized
+            setChannelId(wizardData.channelId);
+            setSelectedNiche(wizardData.niche);
+            setSelectedGeo(wizardData.audienceGeo);
+            setSelectedBrand(wizardData.brandName);
+            setSelectedIntegration(wizardData.integrationType);
 
-          <div className="relative w-full">
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
-            </div>
-            <input
-              type="text"
-              value={channelId}
-              onChange={(e) => setChannelId(e.target.value)}
-              placeholder="Channel ID (e.g. UC_x5X...)"
-              className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 md:py-4 pl-12 pr-32 md:pr-36 text-base md:text-lg text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
-            />
-            <button
-              type="submit"
-              disabled={loading || !channelId}
-              className="absolute right-2 top-2 bottom-2 px-4 md:px-6 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:hover:bg-indigo-600 text-white rounded-lg font-medium transition-all hover:scale-105 active:scale-95 flex items-center justify-center min-w-[100px] md:min-w-[120px] text-sm md:text-base cursor-pointer"
-            >
-              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Calculate'}
-            </button>
-          </div>
-        </form>
+            setLoading(true);
+            setError('');
+            setChannelData(null);
+            setPaymentStatus('idle');
+
+            try {
+              const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/evaluate-channel`, {
+                channelId: wizardData.channelId,
+                niche: wizardData.niche,
+                audienceGeo: wizardData.audienceGeo,
+                brandName: wizardData.brandName,
+                integrationType: wizardData.integrationType,
+              });
+              setChannelData(res.data);
+            } catch (err: any) {
+              setError(err.response?.data?.error || 'Failed to evaluate channel. Check ID and try again.');
+            } finally {
+              setLoading(false);
+            }
+          }}
+        />
 
         {error && (
           <div className="mt-6 text-red-400 bg-red-400/10 border border-red-400/20 py-3 px-4 rounded-xl inline-block text-sm md:text-base w-full max-w-xl">
@@ -177,22 +203,79 @@ function App() {
         {channelData && (
           <div className="w-full max-w-2xl mx-auto mt-12 md:mt-16 pb-12">
             <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl">
-              <div className="text-center mb-8 md:mb-10">
-                <h2 className="text-xl md:text-2xl font-bold text-slate-100 mb-2">{channelData.channelName}</h2>
-                <div className="flex flex-row justify-center space-x-6 md:space-x-8 mt-4 md:mt-6">
-                  <div className="text-center">
-                    <div className="text-2xl md:text-3xl font-bold text-indigo-400">{Number(channelData.channelStatistics.subscriberCount).toLocaleString()}</div>
-                    <div className="text-xs md:text-sm font-medium text-slate-500 mt-1 uppercase tracking-wider">Subscribers</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl md:text-3xl font-bold text-purple-400">{channelData.averageViews.toLocaleString()}</div>
-                    <div className="text-xs md:text-sm font-medium text-slate-500 mt-1 uppercase tracking-wider">Avg Views</div>
+              
+              {/* Creator details */}
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-5 mb-8 border-b border-slate-800/60 pb-6">
+                {channelData.channelAvatarUrl && (
+                  <img 
+                    src={channelData.channelAvatarUrl} 
+                    alt={channelData.channelName} 
+                    className="h-16 w-16 rounded-full border-2 border-indigo-500/25 bg-slate-950 object-cover shadow"
+                  />
+                )}
+                <div className="text-center md:text-left flex-1">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-2">
+                    <Sparkles className="h-3 w-3" />
+                    {channelData.niche || selectedNiche}
+                  </span>
+                  <h2 className="text-xl md:text-2xl font-black text-slate-100">{channelData.channelName}</h2>
+                  
+                  {/* Channels stats badge row */}
+                  <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-3 text-xs text-slate-400 font-medium">
+                    <div className="flex items-center space-x-1.5 bg-slate-950/40 px-3 py-1.5 rounded-lg border border-slate-800/40">
+                      <span className="text-slate-500">Subscribers:</span>
+                      <span className="text-indigo-400 font-bold">{Number(channelData.channelStatistics.subscriberCount).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center space-x-1.5 bg-slate-950/40 px-3 py-1.5 rounded-lg border border-slate-800/40">
+                      <span className="text-slate-500">Avg. Views:</span>
+                      <span className="text-purple-400 font-bold">{channelData.averageViews.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center space-x-1.5 bg-slate-950/40 px-3 py-1.5 rounded-lg border border-slate-800/40">
+                      <span className="text-slate-500">Engagement:</span>
+                      <span className="text-pink-400 font-bold">{channelData.engagementRate}%</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
+              {/* Dynamic Target Alignment Parameters */}
+              <div className="grid grid-cols-2 gap-3 mb-8 text-left text-xs font-sans">
+                <div className="bg-slate-950/40 border border-slate-800/40 rounded-xl p-3 flex items-start gap-2">
+                  <Target className="h-4 w-4 text-indigo-400 mt-0.5 shrink-0" />
+                  <div>
+                    <div className="text-slate-500 uppercase tracking-wider font-semibold text-[10px]">Target Sponsor</div>
+                    <div className="text-slate-200 font-bold text-sm truncate max-w-[180px]">{channelData.brandName || selectedBrand}</div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-950/40 border border-slate-800/40 rounded-xl p-3 flex items-start gap-2">
+                  <Globe className="h-4 w-4 text-indigo-400 mt-0.5 shrink-0" />
+                  <div>
+                    <div className="text-slate-500 uppercase tracking-wider font-semibold text-[10px]">Target Region</div>
+                    <div className="text-slate-200 font-bold text-sm truncate">{channelData.audienceGeo || selectedGeo}</div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-950/40 border border-slate-800/40 rounded-xl p-3 flex items-start gap-2">
+                  <Video className="h-4 w-4 text-indigo-400 mt-0.5 shrink-0" />
+                  <div>
+                    <div className="text-slate-500 uppercase tracking-wider font-semibold text-[10px]">Integration Format</div>
+                    <div className="text-slate-200 font-bold text-sm truncate">{channelData.integrationType || selectedIntegration}</div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-950/40 border border-slate-800/40 rounded-xl p-3 flex items-start gap-2">
+                  <Bookmark className="h-4 w-4 text-indigo-400 mt-0.5 shrink-0" />
+                  <div>
+                    <div className="text-slate-500 uppercase tracking-wider font-semibold text-[10px]">Calculated CPM</div>
+                    <div className="text-slate-200 font-bold text-sm">₹{channelData.cpm || 'TBD'}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pricing section with lock */}
               <div className="bg-slate-950/50 rounded-2xl p-6 md:p-8 border border-slate-800/50 text-center relative overflow-hidden">
-                <div className="text-slate-400 font-medium mb-4 uppercase tracking-wider text-xs md:text-sm">Suggested Sponsorship Fee</div>
+                <div className="text-slate-400 font-medium mb-4 uppercase tracking-wider text-xs md:text-sm">Calibrated Pitch Deck Valuation</div>
 
                 {paymentStatus === 'success' ? (
                   <div className="text-4xl md:text-7xl font-black bg-gradient-to-r from-emerald-400 to-cyan-400 text-transparent bg-clip-text">
@@ -211,7 +294,7 @@ function App() {
                       className="w-full py-3 md:py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold text-base md:text-lg shadow-lg shadow-indigo-500/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center space-x-2 cursor-pointer"
                     >
                       <Lock className="h-5 w-5" />
-                      <span>Unlock Full Report (₹29)</span>
+                      <span>Unlock 3-Page Pitch Deck (₹29)</span>
                     </button>
                   </div>
                 )}
@@ -238,7 +321,7 @@ function App() {
                       className="w-full py-3 md:py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-base md:text-lg transition-all hover:scale-105 active:scale-95 flex items-center justify-center space-x-2 cursor-pointer"
                     >
                       <Download className="h-5 w-5" />
-                      <span>Download Media Kit Again</span>
+                      <span>Download Pitch Deck Again</span>
                     </button>
                   </div>
                 )}
@@ -269,4 +352,3 @@ function App() {
 }
 
 export default App;
-
