@@ -65,26 +65,30 @@ export default function PitchDeckWizard({ loading, onEvaluate, initialValues }: 
   const [sponsorNiche, setSponsorNiche] = useState(initialValues?.sponsorNiche || 'Tech & Gadgets');
   const [recentContentFocus, setRecentContentFocus] = useState(initialValues?.recentContentFocus || '');
 
-  // Persist wizard data as user type or select
+  // Save form data to local storage with debounce to prevent input lag
   useEffect(() => {
-    const data = {
-      channelId,
-      niche,
-      audienceGeo,
-      brandName,
-      integrationType,
-      platform,
-      totalFollowers,
-      accountsReached30d,
-      avgReelPlays,
-      avgStoryViews,
-      topLocation,
-      topAgeRange,
-      genderSplit,
-      sponsorNiche,
-      recentContentFocus
-    };
-    localStorage.setItem('pending_pdf_channel_data', JSON.stringify(data));
+    const timer = setTimeout(() => {
+      const data = {
+        channelId,
+        niche,
+        audienceGeo,
+        brandName,
+        integrationType,
+        platform,
+        totalFollowers,
+        accountsReached30d,
+        avgReelPlays,
+        avgStoryViews,
+        topLocation,
+        topAgeRange,
+        genderSplit,
+        sponsorNiche,
+        recentContentFocus
+      };
+      localStorage.setItem('pending_pdf_channel_data', JSON.stringify(data));
+    }, 800);
+
+    return () => clearTimeout(timer);
   }, [
     channelId, niche, audienceGeo, brandName, integrationType, platform,
     totalFollowers, accountsReached30d, avgReelPlays, avgStoryViews,
@@ -165,7 +169,7 @@ export default function PitchDeckWizard({ loading, onEvaluate, initialValues }: 
     });
   };
 
-  // Direction animation variant
+  // Animation variants
   const slideVariants = {
     initial: { opacity: 0, x: 50 },
     animate: { opacity: 1, x: 0 },
@@ -174,7 +178,7 @@ export default function PitchDeckWizard({ loading, onEvaluate, initialValues }: 
 
   return (
     <div className="w-full max-w-xl mx-auto px-4 font-sans">
-      {/* Wizard Step Progress Tracker */}
+      {/* Step progress */}
       <div className="flex items-center justify-between mb-8 px-4">
         {[1, 2, 3].map((num) => (
           <React.Fragment key={num}>
@@ -205,7 +209,7 @@ export default function PitchDeckWizard({ loading, onEvaluate, initialValues }: 
         ))}
       </div>
 
-      {/* Form Container */}
+      {/* Form */}
       <form onSubmit={handleSubmit} className="relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/40 p-6 md:p-8 backdrop-blur-2xl shadow-2xl">
         <AnimatePresence mode="wait">
           {step === 1 && (
@@ -223,7 +227,7 @@ export default function PitchDeckWizard({ loading, onEvaluate, initialValues }: 
                 <h3 className="text-xl font-bold text-white">Step 1: Identify Your Channel</h3>
               </div>
 
-              {/* Platform Selector Toggle */}
+              {/* Platform selector */}
               <div className="flex border border-slate-800 rounded-xl p-1 bg-slate-950/50">
                 <button
                   type="button"
@@ -305,12 +309,12 @@ export default function PitchDeckWizard({ loading, onEvaluate, initialValues }: 
                     </div>
                   </div>
 
-                  {/* UI Tooltip exactly as requested */}
+                  {/* Guide tooltip */}
                   <div className="bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 rounded-xl p-3 text-xs leading-relaxed flex items-center space-x-2">
                     <span>💡 Open Instagram &gt; Profile &gt; Professional Dashboard to find these metrics.</span>
                   </div>
 
-                  {/* Instagram Metrics Grid */}
+                  {/* Metric inputs */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="total-followers" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
