@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Loader2, Download, CheckCircle, Lock } from 'lucide-react';
+import { Search, Loader2, Download, CheckCircle, Lock, AlertCircle } from 'lucide-react';
+import CheckoutInterstitial from './components/CheckoutInterstitial';
+import ClaimFallback from './components/ClaimFallback';
 
 interface ChannelData {
   channelId: string;
@@ -14,12 +16,17 @@ interface ChannelData {
   niche?: string;
 }
 
+const TOPMATE_URL = 'https://topmate.io/sponsorscout/2109766';
+
 function App() {
   const [channelId, setChannelId] = useState('');
   const [selectedNiche, setSelectedNiche] = useState('Tech & Gadgets');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [channelData, setChannelData] = useState<ChannelData | null>(null);
+
+  // Navigation state
+  const [view, setView] = useState<'home' | 'checkout-interstitial' | 'claim-fallback'>('home');
 
   // Payment states
   const [transactionId] = useState('');
@@ -80,7 +87,7 @@ function App() {
 
   const handleUnlock = () => {
     localStorage.setItem('pending_pdf_channel', channelId);
-    window.location.href = 'https://topmate.io/sponsorscout/2109766';
+    setView('checkout-interstitial');
   };
 
   const simulatePayment = async () => {
@@ -98,9 +105,26 @@ function App() {
     }
   };
 
+  // Render Interstitial
+  if (view === 'checkout-interstitial') {
+    return <CheckoutInterstitial topmateUrl={TOPMATE_URL} />;
+  }
+
+  // Render Fallback claim screen
+  if (view === 'claim-fallback') {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white font-sans flex flex-col items-center justify-center">
+        <ClaimFallback 
+          onBack={() => setView('home')} 
+          pendingChannelId={channelId || undefined} 
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-indigo-500/30 flex flex-col items-center">
-      {/* Hero Section */}
+    <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-indigo-500/30 flex flex-col items-center justify-between">
+      {/* Hero & Main Content */}
       <div className="w-full max-w-4xl mx-auto pt-16 md:pt-24 px-4 md:px-6 text-center flex-grow">
         <h1 className="text-4xl md:text-7xl font-extrabold tracking-tight mb-4 md:mb-6 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 text-transparent bg-clip-text">
           Stop Guessing.<br />Know Your Worth.
@@ -136,7 +160,7 @@ function App() {
             <button
               type="submit"
               disabled={loading || !channelId}
-              className="absolute right-2 top-2 bottom-2 px-4 md:px-6 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:hover:bg-indigo-600 text-white rounded-lg font-medium transition-all hover:scale-105 active:scale-95 flex items-center justify-center min-w-[100px] md:min-w-[120px] text-sm md:text-base"
+              className="absolute right-2 top-2 bottom-2 px-4 md:px-6 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:hover:bg-indigo-600 text-white rounded-lg font-medium transition-all hover:scale-105 active:scale-95 flex items-center justify-center min-w-[100px] md:min-w-[120px] text-sm md:text-base cursor-pointer"
             >
               {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Calculate'}
             </button>
@@ -151,7 +175,7 @@ function App() {
 
         {/* Results / Tease & Lock */}
         {channelData && (
-          <div className="w-full max-w-2xl mx-auto mt-12 md:mt-16 pb-24">
+          <div className="w-full max-w-2xl mx-auto mt-12 md:mt-16 pb-12">
             <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl">
               <div className="text-center mb-8 md:mb-10">
                 <h2 className="text-xl md:text-2xl font-bold text-slate-100 mb-2">{channelData.channelName}</h2>
@@ -184,7 +208,7 @@ function App() {
                   <div className="mt-6 md:mt-8">
                     <button
                       onClick={handleUnlock}
-                      className="w-full py-3 md:py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold text-base md:text-lg shadow-lg shadow-indigo-500/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center space-x-2"
+                      className="w-full py-3 md:py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold text-base md:text-lg shadow-lg shadow-indigo-500/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center space-x-2 cursor-pointer"
                     >
                       <Lock className="h-5 w-5" />
                       <span>Unlock Full Report (₹29)</span>
@@ -198,7 +222,7 @@ function App() {
                       <p className="text-slate-300 mb-4 font-medium text-sm md:text-base">Mock Payment Gateway</p>
                       <button
                         onClick={simulatePayment}
-                        className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center space-x-2 text-sm md:text-base"
+                        className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center space-x-2 text-sm md:text-base cursor-pointer"
                       >
                         <CheckCircle className="h-5 w-5" />
                         <span>Simulate PhonePe Success</span>
@@ -211,7 +235,7 @@ function App() {
                   <div className="mt-6 md:mt-8 animate-in fade-in zoom-in duration-500">
                     <button
                       onClick={() => window.location.href = `${import.meta.env.VITE_API_BASE_URL}/api/download-kit/${channelId}`}
-                      className="w-full py-3 md:py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-base md:text-lg transition-all hover:scale-105 active:scale-95 flex items-center justify-center space-x-2"
+                      className="w-full py-3 md:py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-base md:text-lg transition-all hover:scale-105 active:scale-95 flex items-center justify-center space-x-2 cursor-pointer"
                     >
                       <Download className="h-5 w-5" />
                       <span>Download Media Kit Again</span>
@@ -223,8 +247,26 @@ function App() {
           </div>
         )}
       </div>
+
+      {/* Global Agency-Grade Footer with Payment Safeguard */}
+      <footer className="w-full max-w-4xl mx-auto py-8 px-6 border-t border-slate-900 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500 gap-4 mt-8">
+        <div>
+          © {new Date().getFullYear()} SponsorScout. All rights reserved.
+        </div>
+        <div className="flex items-center space-x-1 bg-slate-900/40 border border-slate-800/60 px-4 py-2 rounded-full shadow-inner animate-pulse hover:animate-none hover:border-slate-700/60 transition-colors">
+          <AlertCircle className="h-3.5 w-3.5 text-amber-500/80" />
+          <span>Payment issues?</span>
+          <button
+            onClick={() => setView('claim-fallback')}
+            className="text-indigo-400 hover:text-indigo-300 font-semibold underline underline-offset-2 ml-1 cursor-pointer transition-colors"
+          >
+            Claim report manually
+          </button>
+        </div>
+      </footer>
     </div>
   );
 }
 
 export default App;
+
