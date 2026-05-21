@@ -22,7 +22,7 @@ export default function ClaimFallback({ onBack, pendingChannelId }: ClaimFallbac
     }
 
     // Set support email details
-    const supportEmail = 'support@sponsorscout.in';
+    const supportEmail = 'teamsponsorscout@gmail.com';
     const subject = `[SponsorScout] PDF Claim Support Request`;
     const body = `Hi SponsorScout Support,
 
@@ -125,7 +125,7 @@ Thank you!`;
             </div>
             <h3 className="text-lg font-bold text-white mb-2">Support Email Triggered!</h3>
             <p className="text-slate-400 text-sm leading-relaxed max-w-sm mx-auto mb-6">
-              Your default mail app should have opened. If it didn't, please email us directly at <span className="text-indigo-400 font-semibold select-all">support@sponsorscout.in</span> with your transaction details.
+              Your default mail app should have opened. If it didn't, please email us directly at <span className="text-indigo-400 font-semibold select-all">teamsponsorscout@gmail.com</span> with your transaction details.
             </p>
             <button
               onClick={() => {
