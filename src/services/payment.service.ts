@@ -17,13 +17,20 @@ export class PaymentService {
     };
   }
 
-  static async unlockChannel(channelId: string) {
+  static async unlockChannel(channelId: string, additionalData?: any) {
     const cachedData = await getCachedChannel(channelId);
     if (cachedData) {
       cachedData.isPaid = true;
+      if (additionalData) {
+        Object.assign(cachedData, additionalData);
+      }
       await cacheChannel(channelId, cachedData);
     } else {
-      await cacheChannel(channelId, { isPaid: true });
+      const dataToCache = {
+        isPaid: true,
+        ...(additionalData || {})
+      };
+      await cacheChannel(channelId, dataToCache);
     }
     return true;
   }

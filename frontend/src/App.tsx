@@ -70,10 +70,22 @@ function App() {
       if (pendingChannel) {
         const unlockSecret = import.meta.env.VITE_UNLOCK_SECRET_KEY || '';
 
+        // Retrieve the pending pitch deck data from localStorage
+        let pitchDeckData = {};
+        const savedData = localStorage.getItem('pending_pitch_deck_data');
+        if (savedData) {
+          try {
+            pitchDeckData = JSON.parse(savedData);
+          } catch (e) {
+            console.error('Failed to parse pending pitch deck data:', e);
+          }
+        }
+
         // Unlock the channel on the backend first, then trigger download
         axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/unlock-channel`, {
           channelId: pendingChannel,
-          unlockSecret
+          unlockSecret,
+          ...pitchDeckData
         })
           .then(() => {
             window.location.href = `${import.meta.env.VITE_API_BASE_URL}/api/download-kit/${pendingChannel}`;
@@ -89,6 +101,7 @@ function App() {
 
             // Clean up localStorage
             localStorage.removeItem('pending_pdf_channel');
+            localStorage.removeItem('pending_pitch_deck_data');
           });
       }
     }
@@ -97,7 +110,24 @@ function App() {
   const handleUnlock = () => {
     localStorage.setItem('pending_pdf_channel', channelId);
     
-    // Ensure the full data block is serialized to storage
+    // Bundle all metrics and inputs into a single object for state desynchronization safeguard
+    const pitchDeckData = {
+      channelId,
+      channelName: channelData?.channelName || 'Unknown Channel',
+      subscribers: channelData?.channelStatistics?.subscriberCount || 'N/A',
+      avgViews: channelData?.averageViews || 0,
+      engagement: channelData?.engagementRate || 0,
+      targetSponsor: selectedBrand,
+      targetRegion: selectedGeo,
+      integrationFormat: selectedIntegration,
+      calculatedCpm: channelData?.cpm || 0,
+      finalValuation: channelData?.calculated_sponsor_fee_inr || 0,
+      channelAvatarUrl: channelData?.channelAvatarUrl || '',
+      recentVideos: channelData?.recentVideos || []
+    };
+    localStorage.setItem('pending_pitch_deck_data', JSON.stringify(pitchDeckData));
+    
+    // Also save the generic form state
     const data = {
       channelId,
       niche: selectedNiche,

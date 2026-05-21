@@ -279,32 +279,32 @@
             <img src="{{channelAvatarUrl}}" alt="{{channelName}}" class="avatar">
             {{/if}}
             <h1>{{channelName}}</h1>
-            <p>Exclusive Sponsorship Proposal for <span class="gradient-text" style="-webkit-text-fill-color: initial; font-weight: 800;">{{brandName}}</span></p>
+            <p>Exclusive Sponsorship Proposal for <span class="gradient-text" style="-webkit-text-fill-color: initial; font-weight: 800;">{{targetSponsor}}</span></p>
             
             <div class="stats-row">
                 <div class="stat-item">
-                    <div class="stat-val">{{subscriberCount}}</div>
+                    <div class="stat-val">{{subscribers}}</div>
                     <div class="stat-lbl">Subscribers</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-val">{{averageViews}}</div>
+                    <div class="stat-val">{{avgViews}}</div>
                     <div class="stat-lbl">Avg. Views</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-val">{{engagementRate}}%</div>
+                    <div class="stat-val">{{engagement}}%</div>
                     <div class="stat-lbl">Engagement</div>
                 </div>
             </div>
             
             <div class="fee-card">
                 <div class="lbl">Recommended Placement Fee</div>
-                <div class="val">₹{{suggestedFee}}</div>
+                <div class="val">₹{{finalValuation}}</div>
             </div>
         </div>
         
         <div class="page-footer">
             <span>Calibrated: {{currentDate}}</span>
-            <span>Target placement: {{integrationType}}</span>
+            <span>Target placement: {{integrationFormat}}</span>
         </div>
     </div>
     
@@ -320,13 +320,13 @@
         <div class="content-body">
             <h2 class="section-title">Niche & Brand Resonance</h2>
             <p class="intro-text">
-                This document structures a high-conversion alignment model between the content ecosystem of <strong>{{channelName}}</strong> and the promotional goals of <strong>{{brandName}}</strong>. By blending organic contextual integration with targeted consumer focus, we ensure campaign success.
+                This document structures a high-conversion alignment model between the content ecosystem of <strong>{{channelName}}</strong> and the promotional goals of <strong>{{targetSponsor}}</strong>. By blending organic contextual integration with targeted consumer focus, we ensure campaign success.
             </p>
             
             <div class="highlight-box">
-                <h4>Why {{brandName}} Fits Perfect inside {{niche}}</h4>
+                <h4>Why {{targetSponsor}} Fits Perfect inside {{niche}}</h4>
                 <p>
-                    {{channelName}} operates as an authoritative voice in the <strong>{{niche}}</strong> space. Audiences actively seek niche-specific reviews, insights, and recommendations from this creator, resulting in a pre-qualified demographic uniquely primed for <strong>{{brandName}}</strong> offerings.
+                    {{channelName}} operates as an authoritative voice in the <strong>{{niche}}</strong> space. Audiences actively seek niche-specific reviews, insights, and recommendations from this creator, resulting in a pre-qualified demographic uniquely primed for <strong>{{targetSponsor}}</strong> offerings.
                 </p>
             </div>
             
@@ -336,14 +336,14 @@
                 <div class="bullet-item">
                     <div class="bullet-dot"></div>
                     <div class="bullet-content">
-                        <strong>Audience Geo Reach:</strong> Primarily targeting users in <strong>{{audienceGeo}}</strong>, capturing highly responsive local cohorts.
+                        <strong>Audience Geo Reach:</strong> Primarily targeting users in <strong>{{targetRegion}}</strong>, capturing highly responsive local cohorts.
                     </div>
                 </div>
                 
                 <div class="bullet-item">
                     <div class="bullet-dot"></div>
                     <div class="bullet-content">
-                        <strong>Native Delivery Focus:</strong> Utilizing a tailored <strong>{{integrationType}}</strong> placement format to maximize viewer retention without breaking editorial flow.
+                        <strong>Native Delivery Focus:</strong> Utilizing a tailored <strong>{{integrationFormat}}</strong> placement format to maximize viewer retention without breaking editorial flow.
                     </div>
                 </div>
                 
@@ -357,7 +357,7 @@
         </div>
         
         <div class="page-footer">
-            <span>Proposal: {{channelName}} x {{brandName}}</span>
+            <span>Proposal: {{channelName}} x {{targetSponsor}}</span>
             <span>Vertical: {{niche}}</span>
         </div>
     </div>
@@ -387,7 +387,7 @@
                 <tbody>
                     <tr>
                         <td>Expected Reach (Average Views)</td>
-                        <td><strong>{{averageViews}} views</strong> per video</td>
+                        <td><strong>{{avgViews}} views</strong> per video</td>
                     </tr>
                     <tr>
                         <td>Dynamic Niche CPM (INR)</td>
@@ -395,19 +395,19 @@
                     </tr>
                     <tr>
                         <td>Audience Location Multiplier</td>
-                        <td><strong>{{geoMultiplier}}x</strong> multiplier ({{audienceGeo}})</td>
+                        <td><strong>{{geoMultiplier}}x</strong> multiplier ({{targetRegion}})</td>
                     </tr>
                     <tr>
                         <td>Integration Format Multiplier</td>
-                        <td><strong>{{integrationMultiplier}}x</strong> multiplier ({{integrationType}})</td>
+                        <td><strong>{{integrationMultiplier}}x</strong> multiplier ({{integrationFormat}})</td>
                     </tr>
                     <tr>
                         <td>Effective Combined CPM</td>
-                        <td><strong>₹{{cpm}}</strong> per 1,000 views</td>
+                        <td><strong>₹{{calculatedCpm}}</strong> per 1,000 views</td>
                     </tr>
                     <tr>
                         <td><strong>Final Calibrated Valuation</strong></td>
-                        <td><strong>₹{{suggestedFee}} INR</strong></td>
+                        <td><strong>₹{{finalValuation}} INR</strong></td>
                     </tr>
                 </tbody>
             </table>

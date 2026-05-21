@@ -45,10 +45,21 @@ const paymentRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   interface UnlockBody {
     channelId: string;
     unlockSecret: string;
+    channelName?: string;
+    subscribers?: string;
+    avgViews?: number;
+    engagement?: number;
+    targetSponsor?: string;
+    targetRegion?: string;
+    integrationFormat?: string;
+    calculatedCpm?: number;
+    finalValuation?: number;
+    channelAvatarUrl?: string;
+    recentVideos?: any[];
   }
 
   fastify.post<{ Body: UnlockBody }>('/api/unlock-channel', async (request, reply) => {
-    const { channelId, unlockSecret } = request.body;
+    const { channelId, unlockSecret, ...additionalData } = request.body;
     if (!channelId) {
       return reply.status(400).send({ error: 'channelId is required' });
     }
@@ -59,7 +70,7 @@ const paymentRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     }
 
     try {
-      await PaymentService.unlockChannel(channelId);
+      await PaymentService.unlockChannel(channelId, additionalData);
       return reply.send({ success: true, message: 'Media Kit unlocked successfully' });
     } catch (error: any) {
       return reply.status(500).send({ error: error.message });
