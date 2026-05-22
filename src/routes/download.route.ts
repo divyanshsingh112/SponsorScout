@@ -64,6 +64,100 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         ? `${cachedData.channelName || 'Unknown Creator'}'s highly visually engaged audience of followers is perfectly primed for ${cachedData.targetSponsor ?? cachedData.brandName ?? 'Sponsor Brand'} through dynamic Instagram content.`
         : `${cachedData.channelName || 'Unknown Channel'}'s authority in the ${cachedData.niche || 'Tech'} space is heavily reinforced by recent high-performing videos.`;
 
+      // 1. YouTube Metric Overrides
+      const subscribersNum = Number(rawSubscribers);
+      const avgViewsNum = Number(rawAvgViews);
+      const viewRateVal = (!isNaN(subscribersNum) && subscribersNum > 0) ? (avgViewsNum / subscribersNum) * 100 : 0;
+      const cappedViewRate = Math.min(viewRateVal, 15).toFixed(2);
+      const engagementLabel = "Avg. View Rate";
+
+      // 2. Instagram Metric Overrides
+      const followersNum = Number(totalFollowers);
+      const avgReelsPlaysNum = Number(avgReelPlays);
+      const reachRatioVal = (!isNaN(followersNum) && followersNum > 0) ? (avgReelsPlaysNum / followersNum) * 100 : 0;
+      const reachRatio = reachRatioVal.toFixed(1);
+      const reachLabel = "Reach-to-Follower Ratio";
+      const reachContext = reachRatioVal > 100
+        ? "🔥 Viral reach — content distributing beyond existing audience"
+        : "Healthy organic reach within follower base";
+
+      // 3. Industry Benchmarks
+      const benchmarkRanges = {
+        gaming:      { low: 20000,  high: 80000  },
+        tech:        { low: 30000,  high: 120000 },
+        finance:     { low: 40000,  high: 150000 },
+        lifestyle:   { low: 8000,   high: 40000  },
+        fitness:     { low: 10000,  high: 50000  },
+        education:   { low: 15000,  high: 60000  },
+        food:        { low: 8000,   high: 35000  },
+      };
+
+      const nicheLower = (cachedData.niche || 'Tech').toLowerCase();
+      let benchmarkNicheKey = 'tech';
+      if (nicheLower.includes('gaming')) {
+        benchmarkNicheKey = 'gaming';
+      } else if (nicheLower.includes('tech')) {
+        benchmarkNicheKey = 'tech';
+      } else if (nicheLower.includes('finance') || nicheLower.includes('crypto')) {
+        benchmarkNicheKey = 'finance';
+      } else if (nicheLower.includes('lifestyle') || nicheLower.includes('vlog')) {
+        benchmarkNicheKey = 'lifestyle';
+      } else if (nicheLower.includes('fitness')) {
+        benchmarkNicheKey = 'fitness';
+      } else if (nicheLower.includes('education')) {
+        benchmarkNicheKey = 'education';
+      } else if (nicheLower.includes('food')) {
+        benchmarkNicheKey = 'food';
+      }
+
+      const range = benchmarkRanges[benchmarkNicheKey as keyof typeof benchmarkRanges] || { low: 10000, high: 60000 };
+      const finalFee = rawFinalValuation;
+
+      const barPosition = Math.min(95, Math.max(5,
+        ((finalFee - range.low) / (range.high - range.low)) * 100
+      )).toFixed(0);
+
+      const benchmarkLow = range.low.toLocaleString('en-IN');
+      const benchmarkHigh = range.high.toLocaleString('en-IN');
+      const benchmarkPosition = barPosition;
+      const formattedFee = finalFee.toLocaleString('en-IN');
+
+      // 4. 3-Tier Packages
+      const baseFee = finalFee;
+      const tierStarter = Math.round(baseFee * 0.65).toLocaleString('en-IN');
+      const tierStandard = baseFee.toLocaleString('en-IN');
+      const tierPremium = Math.round(baseFee * 1.65).toLocaleString('en-IN');
+
+      let deliverableStarter = '';
+      let deliverableStandard = '';
+      let deliverablePremium = '';
+
+      if (!isInstagram) {
+        deliverableStarter = "30-sec brand mention";
+        deliverableStandard = "60-sec dedicated shoutout";
+        deliverablePremium = "Dedicated video + Community post";
+      } else {
+        deliverableStarter = "3x Instagram Stories";
+        deliverableStandard = "1x Reel + 3x Stories";
+        deliverablePremium = "2x Reels + 5x Stories + Link in Bio (7 days)";
+      }
+
+      // 5. Negotiation Brief
+      const floorPrice = Math.round(baseFee * 0.70).toLocaleString('en-IN');
+      const recommendedFee = baseFee.toLocaleString('en-IN');
+      const exclusivityFee = Math.round(baseFee * 1.25).toLocaleString('en-IN');
+      const usageRightsFee = Math.round(baseFee * 0.20).toLocaleString('en-IN');
+
+      // 6. Outreach Email Template
+      const creatorFirstName = (cachedData.channelName || 'Creator').split(' ')[0];
+      const mostRecentVideoObj = cachedData.recentVideos && cachedData.recentVideos[0]
+        ? cachedData.recentVideos[0]
+        : null;
+      const mostRecentVideo = mostRecentVideoObj
+        ? (typeof mostRecentVideoObj === 'string' ? mostRecentVideoObj : (mostRecentVideoObj.title || "my recent content"))
+        : "my recent content";
+      const aiParagraph = cachedData.alignmentText || fallbackPitch;
+
       const templateData = {
         // Universal / New Keys (Formatted for Premium PDF look)
         channelName: cachedData.channelName || 'Unknown Channel',
@@ -113,6 +207,31 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         baseNicheCpm: formatNumber(baseNicheCpm),
         geoMultiplier,
         integrationMultiplier,
+
+        // Added parameters for Section 3 Checklist compatibility
+        viewRate: cappedViewRate,
+        engagementLabel,
+        reachRatio,
+        reachLabel,
+        reachContext,
+        benchmarkLow,
+        benchmarkHigh,
+        benchmarkPosition,
+        formattedFee,
+        tierStarter,
+        tierStandard,
+        tierPremium,
+        deliverableStarter,
+        deliverableStandard,
+        deliverablePremium,
+        floorPrice,
+        recommendedFee,
+        exclusivityFee,
+        usageRightsFee,
+        creatorFirstName,
+        creatorName: cachedData.channelName || 'Unknown Creator',
+        mostRecentVideo,
+        aiParagraph
       };
 
       const pdfBuffer = await generateMediaKit(templateData);

@@ -7,45 +7,58 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
+export interface AlignmentPitchParams {
+  creatorName: string;
+  platform: string;
+  niche: string;
+  recentVideos: string[];
+  brandName: string;
+  brandCategory: string;
+  geoTier: string;
+  placementFormat: string;
+}
+
 /**
- * Generates a B2B media alignment pitch using Groq's high-speed LLM service.
- * Explains why the channel's recent videos prime the audience to purchase from the target sponsor.
- * 
- * @param channelName YouTube Channel Name
- * @param niche Niche of the creator
- * @param targetSponsor Target Sponsor Brand Name
- * @param recentVideoTitles List of recent video titles (up to 5)
+ * Generates a hyper-specific, data-backed B2B media alignment pitch using Groq's high-speed LLM service.
  */
-export async function generateAlignmentPitch(
-  channelName: string,
-  niche: string,
-  targetSponsor: string,
-  recentVideoTitlesOrContentFocus: string[] | string,
-  platform: string = 'youtube'
-): Promise<string> {
-  const isInstagram = platform === 'instagram';
-  
-  let systemPrompt = '';
-  let userPrompt = '';
-  
-  if (isInstagram) {
-    systemPrompt = `You are an elite B2B media buyer. Write exactly 3 sentences (maximum 45 words) explaining why [Creator Name]'s recent visual content pillars about [Recent Content Focus] make their [Niche] audience perfectly primed to buy products from [Target Sponsor]. Be highly persuasive. Do not include any introductory or concluding conversational text. Output only the 3 sentences.`;
-    userPrompt = `Creator Name: ${channelName}
+export async function generateAlignmentPitch(params: AlignmentPitchParams): Promise<string> {
+  const {
+    creatorName,
+    platform,
+    niche,
+    recentVideos,
+    brandName,
+    brandCategory,
+    geoTier,
+    placementFormat,
+  } = params;
+
+  const groqMessages = [
+    {
+      role: 'system' as const,
+      content: `You are a senior B2B influencer marketing strategist specializing in the Indian creator economy. You write hyper-specific, data-backed campaign alignment paragraphs for sponsorship pitch decks. Your writing is direct, professional, and never uses generic filler phrases. You always reference specific content the creator has made and connect it concretely to the brand's product category. Maximum 4 sentences. No bullet points. No em dashes.`
+    },
+    {
+      role: 'user' as const,
+      content: `Write a campaign alignment paragraph for a sponsorship pitch deck.
+
+Creator Name: ${creatorName}
+Platform: ${platform}
 Niche: ${niche}
-Target Sponsor: ${targetSponsor}
-Recent Content Focus: ${recentVideoTitlesOrContentFocus}`;
-  } else {
-    const titlesArray = Array.isArray(recentVideoTitlesOrContentFocus)
-      ? recentVideoTitlesOrContentFocus
-      : [recentVideoTitlesOrContentFocus];
-    const titlesString = titlesArray.map((t) => `"${t}"`).join(', ');
-    
-    systemPrompt = `You are an elite B2B media buyer. Write exactly 3 sentences (maximum 45 words) explaining why [Channel Name]'s recent videos about [Video Titles] make their [Niche] audience perfectly primed to buy products from [Target Sponsor]. Be highly persuasive. Do not include any introductory or concluding conversational text. Output only the 3 sentences.`;
-    userPrompt = `Channel Name: ${channelName}
-Niche: ${niche}
-Target Sponsor: ${targetSponsor}
-Video Titles: ${titlesString}`;
-  }
+Recent Content Titles: ${recentVideos.join(', ')}
+Target Brand: ${brandName}
+Brand Product Category: ${brandCategory}
+Audience Geography: ${geoTier}
+Format: ${placementFormat}
+
+Requirements:
+- Reference at least one of the recent content titles by name
+- Explain WHY this creator's specific audience is pre-qualified for THIS brand
+- Suggest one concrete, specific campaign integration idea (e.g. "a dedicated unboxing segment", "a 60-second mid-roll during setup tours")
+- End with a sentence about expected conversion quality, not just reach
+- NEVER use these phrases: "leverage creator trust", "seamlessly integrate", "organic contextual", "turning passive viewers into brand advocates"`
+    }
+  ];
 
   try {
     if (!process.env.GROQ_API_KEY) {
@@ -53,13 +66,10 @@ Video Titles: ${titlesString}`;
     }
 
     const chatCompletion = await groq.chat.completions.create({
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
+      messages: groqMessages,
       model: 'llama3-8b-8192',
       temperature: 0.7,
-      max_tokens: 120,
+      max_tokens: 200,
     });
 
     const completion = chatCompletion.choices[0]?.message?.content?.trim() || '';
@@ -71,16 +81,11 @@ Video Titles: ${titlesString}`;
   } catch (error: any) {
     console.error('⚠️ [AI Error] Groq API completion failed. Using high-converting fallback pitch. Details:', error.message || error);
     
-    if (isInstagram) {
-      const focusText = typeof recentVideoTitlesOrContentFocus === 'string'
-        ? recentVideoTitlesOrContentFocus
-        : String(recentVideoTitlesOrContentFocus);
-      return `${channelName}'s highly visually engaged audience of followers is perfectly primed for ${targetSponsor} through dynamic Instagram content. By aligning strategic product integrations across highly-retained Reels covering "${focusText}" and interactive Stories, we capture maximum attention. This targeted focus delivers an exceptionally pre-qualified cohort primed for immediate action and high-converting B2B brand affinity.`;
+    if (platform === 'instagram') {
+      const focusText = recentVideos.join(', ');
+      return `${creatorName}'s highly visually engaged audience of followers is perfectly primed for ${brandName} through dynamic Instagram content. By aligning strategic product integrations across highly-retained Reels covering "${focusText}" and interactive Stories, we capture maximum attention. This targeted focus delivers an exceptionally pre-qualified cohort primed for immediate action and high-converting B2B brand affinity.`;
     } else {
-      const titlesArray = Array.isArray(recentVideoTitlesOrContentFocus)
-        ? recentVideoTitlesOrContentFocus
-        : [recentVideoTitlesOrContentFocus];
-      return `${channelName}'s authority in the ${niche} space is heavily reinforced by recent high-performing videos covering topics like ${titlesArray.slice(0, 2).map((t) => `"${t}"`).join(' and ')}. This active interest perfectly mirrors ${targetSponsor}'s core value proposition and product advantages. Consequently, their highly engaged, pre-qualified viewer base represents an ideal cohort primed for immediate conversion.`;
+      return `${creatorName}'s authority in the ${niche} space is heavily reinforced by recent high-performing videos covering topics like ${recentVideos.slice(0, 2).map((t) => `"${t}"`).join(' and ')}. This active interest perfectly mirrors ${brandName}'s core value proposition and product advantages. Consequently, their highly engaged, pre-qualified viewer base represents an ideal cohort primed for immediate conversion.`;
     }
   }
 }

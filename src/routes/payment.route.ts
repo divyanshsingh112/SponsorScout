@@ -113,13 +113,31 @@ const paymentRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
       // 3. Generate the AI Alignment Pitch
       let alignmentText = '';
-      if (platform === 'instagram') {
-        const recentContentFocus = additionalData?.recentContentFocus || cachedData?.recentContentFocus || '';
-        alignmentText = await generateAlignmentPitch(channelName, niche, targetSponsor, recentContentFocus, 'instagram');
-      } else {
-        const recentVideoTitles = recentVideos.slice(0, 5).map((v: any) => v.title || 'Unknown Video');
-        alignmentText = await generateAlignmentPitch(channelName, niche, targetSponsor, recentVideoTitles, 'youtube');
-      }
+      
+      const creatorName = channelName;
+      const brandName = targetSponsor;
+      const brandCategory = platform === 'instagram' ? (additionalData?.sponsorNiche || cachedData?.sponsorNiche || niche) : niche;
+      const geoTier = platform === 'instagram' 
+        ? (additionalData?.topLocation || cachedData?.topLocation || additionalData?.targetRegion || cachedData?.targetRegion || 'Tier 3')
+        : (additionalData?.targetRegion || cachedData?.targetRegion || additionalData?.audienceGeo || cachedData?.audienceGeo || 'Tier 3 India/Asia');
+      const placementFormat = platform === 'instagram'
+        ? 'Reels & Stories'
+        : (additionalData?.integrationFormat || cachedData?.integrationFormat || additionalData?.integrationType || cachedData?.integrationType || '60-sec shoutout');
+
+      const recentTitles = platform === 'instagram'
+        ? [additionalData?.recentContentFocus || cachedData?.recentContentFocus || '']
+        : recentVideos.slice(0, 5).map((v: any) => v.title || 'Unknown Video');
+
+      alignmentText = await generateAlignmentPitch({
+        creatorName,
+        platform,
+        niche,
+        recentVideos: recentTitles,
+        brandName,
+        brandCategory,
+        geoTier,
+        placementFormat
+      });
 
       // 4. Attach alignmentText to the final payload to merge in cache
       const finalPayload = {
