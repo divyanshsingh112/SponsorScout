@@ -1,0 +1,113 @@
+<!-- PAGE 3: ROI PROJECTION & CPM MATH (YouTube) -->
+<div class="page">
+    <div class="page-header">
+        <span class="brand">ROI Projection</span>
+        <span class="page-num">03 / 05</span>
+    </div>
+    
+    <div class="content-body">
+        <h2 class="section-title">Campaign ROI Projections</h2>
+        <p class="intro-text">
+            The pricing model for this sponsorship placement is built directly upon empirical performance metrics. Below is the transparent breakdown of expected reach and value delivery.
+        </p>
+        
+        <table class="roi-table">
+            <thead>
+                <tr>
+                    <th>Metric Dimension</th>
+                    <th>Calibrated Baseline Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Expected Reach (Average Views)</td>
+                    <td><strong>{{avgViews}} views</strong> per video</td>
+                </tr>
+                <tr>
+                    <td>Dynamic Niche CPM (INR)</td>
+                    <td><strong>₹{{baseNicheCpm}}</strong> ({{niche}})</td>
+                </tr>
+                <tr>
+                    <td>Audience Location Multiplier</td>
+                    <td><strong>{{geoMultiplier}}x</strong> multiplier ({{targetRegion}})</td>
+                </tr>
+                <tr>
+                    <td>Integration Format Multiplier</td>
+                    <td><strong>{{integrationMultiplier}}x</strong> multiplier ({{integrationFormat}})</td>
+                </tr>
+                <tr>
+                    <td>Effective Combined CPM</td>
+                    <td><strong>₹{{calculatedCpm}}</strong> per 1,000 views</td>
+                </tr>
+                <tr>
+                    <td><strong>Final Calibrated Valuation</strong></td>
+                    <td><strong>₹{{finalValuation}} INR</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- YOU VS INDUSTRY BENCHMARK SECTION -->
+        <div class="benchmark-section">
+            <h3 class="benchmark-title">YOU VS. INDUSTRY BENCHMARK</h3>
+            <p class="benchmark-subtitle">Where your valuation stands compared to peer YouTube channels in your niche</p>
+            <div class="benchmark-bar-container">
+                <span class="benchmark-low">₹{{benchmarkLow}}</span>
+                <div class="benchmark-track">
+                    <div class="benchmark-fill" style="width: {{benchmarkPosition}}%;"></div>
+                    <div class="benchmark-marker" style="left: {{benchmarkPosition}}%;">
+                        <span class="benchmark-marker-label">₹{{formattedFee}} (You)</span>
+                    </div>
+                </div>
+                <span class="benchmark-high">₹{{benchmarkHigh}}</span>
+            </div>
+            <p class="benchmark-note">Calculated using SponsorScout Dynamic Niche CPM Matrix — YouTube Benchmarks</p>
+        </div>
+
+        <!-- 3-TIER PACKAGE TABLE -->
+        <div class="tier-section">
+            <h3 class="tier-title">Sponsorship Package Options</h3>
+            <table class="tier-table">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Package Tier</th>
+                        <th style="width: 50%;">Deliverables Included</th>
+                        <th style="width: 30%;">Suggested Pricing</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tier-badge starter">Starter</span></td>
+                        <td>{{deliverableStarter}}</td>
+                        <td><span class="tier-price">₹{{tierStarter}} INR</span></td>
+                    </tr>
+                    <tr class="tier-highlighted">
+                        <td><span class="tier-badge standard">Standard</span></td>
+                        <td><strong>{{deliverableStandard}} (Recommended)</strong></td>
+                        <td><span class="tier-price highlighted">₹{{tierStandard}} INR</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="tier-badge premium">Premium</span></td>
+                        <td>{{deliverablePremium}}</td>
+                        <td><span class="tier-price">₹{{tierPremium}} INR</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="tier-badge" style="background: #1a1a2e; color: #60a5fa;">Monthly</span></td>
+                        <td>Monthly Retainer Estimate (4 posts/month)</td>
+                        <td><span class="tier-price" style="color: #1a1a2e; font-weight: 800;">₹{{monthlyRetainerEstimate}} INR</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="tier-note">*Packages are customized based on current platform engagement and average reach projections.</p>
+        </div>
+        
+        <div class="formula-box">
+            Placement Valuation Formula:<br>
+            Valuation = (Average Views * Effective CPM) / 1,000
+        </div>
+    </div>
+    
+    <div class="page-footer">
+        <span>Calibrated: {{currentDate}} — Data valid for 30 days. Re-generate after {{expiryDate}}.</span>
+        <span>Strict Mathematical Evaluation</span>
+    </div>
+</div>

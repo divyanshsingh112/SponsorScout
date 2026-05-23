@@ -3,6 +3,14 @@ import { getCachedChannel } from '../services/redis.service';
 import { generateMediaKit } from '../services/pdf.service';
 import { cpmCalculator } from '../utils/cpm';
 
+/**
+ * YouTube-specific download route.
+ * Preserved from original logic with minimal changes:
+ * - Removed all Instagram conditional branches
+ * - Added Data Freshness dates (New Feature 02)
+ * - Added Monthly Retainer Estimate (New Feature 05)
+ * - Now passes platform='youtube' to generateMediaKit
+ */
 const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   fastify.get<{ Params: { channelId: string } }>('/api/download-kit/:channelId', async (request, reply) => {
     const { channelId } = request.params;
@@ -18,26 +26,23 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         return reply.status(402).send({ error: 'Please complete the ₹29 payment to unlock this Media Kit.' });
       }
 
+      // If this is an Instagram channel, redirect to the Instagram-specific route
+      if (cachedData.platform === 'instagram') {
+        return reply.redirect(`/api/download-kit-instagram/${channelId}`);
+      }
+
       const rawSubscribers = cachedData.subscribers ?? cachedData.channelStatistics?.subscriberCount ?? 'N/A';
       const rawAvgViews = cachedData.avgViews ?? cachedData.averageViews ?? 0;
       const rawEngagement = cachedData.engagement ?? cachedData.engagementRate ?? 0;
       const rawCalculatedCpm = cachedData.calculatedCpm ?? cachedData.cpm ?? 100;
       const rawFinalValuation = cachedData.finalValuation ?? cachedData.calculated_sponsor_fee_inr ?? 0;
 
-      const isInstagram = cachedData.platform === 'instagram';
-      const totalFollowers = cachedData.totalFollowers ?? 0;
-      const accountsReached30d = cachedData.accountsReached30d ?? 0;
-      const avgReelPlays = cachedData.avgReelPlays ?? 0;
-      const avgStoryViews = cachedData.avgStoryViews ?? 0;
-      const reelValuation = cachedData.reelValuation ?? 0;
-      const storyValuation = cachedData.storyValuation ?? 0;
-
       // Derive multipliers and base cpm if they are missing (e.g. if the cache expired and we restored from limited payload)
       let baseNicheCpm = cachedData.baseNicheCpm;
       let geoMultiplier = cachedData.geoMultiplier ?? 1.0;
       let integrationMultiplier = cachedData.integrationMultiplier ?? 1.0;
 
-      if (!isInstagram && (!baseNicheCpm || !geoMultiplier || !integrationMultiplier)) {
+      if (!baseNicheCpm || !geoMultiplier || !integrationMultiplier) {
         const derivedNiche = cachedData.niche || 'Tech';
         const derivedGeo = cachedData.targetRegion ?? cachedData.audienceGeo ?? 'Tier 3 India/Asia';
         const derivedIntegration = cachedData.integrationFormat ?? cachedData.integrationType ?? '60-sec shoutout';
@@ -60,29 +65,15 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         return String(val);
       };
 
-      const fallbackPitch = isInstagram
-        ? `${cachedData.channelName || 'Unknown Creator'}'s highly visually engaged audience of followers is perfectly primed for ${cachedData.targetSponsor ?? cachedData.brandName ?? 'Sponsor Brand'} through dynamic Instagram content.`
-        : `${cachedData.channelName || 'Unknown Channel'}'s authority in the ${cachedData.niche || 'Tech'} space is heavily reinforced by recent high-performing videos.`;
-
-      // 1. YouTube Metric Overrides
+      // YouTube Metric Overrides
       const subscribersNum = Number(rawSubscribers);
       const avgViewsNum = Number(rawAvgViews);
       const viewRateVal = (!isNaN(subscribersNum) && subscribersNum > 0) ? (avgViewsNum / subscribersNum) * 100 : 0;
       const cappedViewRate = Math.min(viewRateVal, 15).toFixed(2);
       const engagementLabel = "Avg. View Rate";
 
-      // 2. Instagram Metric Overrides
-      const followersNum = Number(totalFollowers);
-      const avgReelsPlaysNum = Number(avgReelPlays);
-      const reachRatioVal = (!isNaN(followersNum) && followersNum > 0) ? (avgReelsPlaysNum / followersNum) * 100 : 0;
-      const reachRatio = reachRatioVal.toFixed(1);
-      const reachLabel = "Reach-to-Follower Ratio";
-      const reachContext = reachRatioVal > 100
-        ? "🔥 Viral reach — content distributing beyond existing audience"
-        : "Healthy organic reach within follower base";
-
-      // 3. Industry Benchmarks
-      const benchmarkRanges = {
+      // Industry Benchmarks (YouTube)
+      const benchmarkRanges: Record<string, { low: number; high: number }> = {
         gaming:      { low: 20000,  high: 80000  },
         tech:        { low: 30000,  high: 120000 },
         finance:     { low: 40000,  high: 150000 },
@@ -94,23 +85,15 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
       const nicheLower = (cachedData.niche || 'Tech').toLowerCase();
       let benchmarkNicheKey = 'tech';
-      if (nicheLower.includes('gaming')) {
-        benchmarkNicheKey = 'gaming';
-      } else if (nicheLower.includes('tech')) {
-        benchmarkNicheKey = 'tech';
-      } else if (nicheLower.includes('finance') || nicheLower.includes('crypto')) {
-        benchmarkNicheKey = 'finance';
-      } else if (nicheLower.includes('lifestyle') || nicheLower.includes('vlog')) {
-        benchmarkNicheKey = 'lifestyle';
-      } else if (nicheLower.includes('fitness')) {
-        benchmarkNicheKey = 'fitness';
-      } else if (nicheLower.includes('education')) {
-        benchmarkNicheKey = 'education';
-      } else if (nicheLower.includes('food')) {
-        benchmarkNicheKey = 'food';
-      }
+      if (nicheLower.includes('gaming')) benchmarkNicheKey = 'gaming';
+      else if (nicheLower.includes('tech')) benchmarkNicheKey = 'tech';
+      else if (nicheLower.includes('finance') || nicheLower.includes('crypto')) benchmarkNicheKey = 'finance';
+      else if (nicheLower.includes('lifestyle') || nicheLower.includes('vlog')) benchmarkNicheKey = 'lifestyle';
+      else if (nicheLower.includes('fitness')) benchmarkNicheKey = 'fitness';
+      else if (nicheLower.includes('education')) benchmarkNicheKey = 'education';
+      else if (nicheLower.includes('food')) benchmarkNicheKey = 'food';
 
-      const range = benchmarkRanges[benchmarkNicheKey as keyof typeof benchmarkRanges] || { low: 10000, high: 60000 };
+      const range = benchmarkRanges[benchmarkNicheKey] || { low: 10000, high: 60000 };
       const finalFee = rawFinalValuation;
 
       const barPosition = Math.min(95, Math.max(5,
@@ -122,44 +105,42 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       const benchmarkPosition = barPosition;
       const formattedFee = finalFee.toLocaleString('en-IN');
 
-      // 4. 3-Tier Packages
+      // 3-Tier Packages
       const baseFee = finalFee;
       const tierStarter = Math.round(baseFee * 0.65).toLocaleString('en-IN');
       const tierStandard = baseFee.toLocaleString('en-IN');
       const tierPremium = Math.round(baseFee * 1.65).toLocaleString('en-IN');
 
-      let deliverableStarter = '';
-      let deliverableStandard = '';
-      let deliverablePremium = '';
+      const deliverableStarter = "30-sec brand mention";
+      const deliverableStandard = "60-sec dedicated shoutout";
+      const deliverablePremium = "Dedicated video + Community post";
 
-      if (!isInstagram) {
-        deliverableStarter = "30-sec brand mention";
-        deliverableStandard = "60-sec dedicated shoutout";
-        deliverablePremium = "Dedicated video + Community post";
-      } else {
-        deliverableStarter = "3x Instagram Stories";
-        deliverableStandard = "1x Reel + 3x Stories";
-        deliverablePremium = "2x Reels + 5x Stories + Link in Bio (7 days)";
-      }
+      // NEW FEATURE 05: Monthly Retainer Estimate
+      const monthlyRetainerEstimate = Math.round(baseFee * 4).toLocaleString('en-IN');
 
-      // 5. Negotiation Brief
+      // Negotiation Brief
       const floorPrice = Math.round(baseFee * 0.70).toLocaleString('en-IN');
       const recommendedFee = baseFee.toLocaleString('en-IN');
       const exclusivityFee = Math.round(baseFee * 1.25).toLocaleString('en-IN');
       const usageRightsFee = Math.round(baseFee * 0.20).toLocaleString('en-IN');
 
-      // 6. Outreach Email Template
+      // Outreach Email Template
       const creatorFirstName = (cachedData.channelName || 'Creator').split(' ')[0];
       const mostRecentVideoObj = cachedData.recentVideos && cachedData.recentVideos[0]
         ? cachedData.recentVideos[0]
         : null;
       const mostRecentVideo = mostRecentVideoObj
-        ? (typeof mostRecentVideoObj === 'string' ? mostRecentVideoObj : (mostRecentVideoObj.title || "my recent content"))
-        : "my recent content";
-      const aiParagraph = cachedData.alignmentText || fallbackPitch;
+        ? (typeof mostRecentVideoObj === 'string' ? mostRecentVideoObj : (mostRecentVideoObj.title || "my latest content"))
+        : "my latest content";
+      const aiParagraph = cachedData.alignmentText || `${cachedData.channelName || 'Unknown Channel'}'s authority in the ${cachedData.niche || 'Tech'} space is heavily reinforced by recent high-performing videos.`;
+
+      // NEW FEATURE 02: Data Freshness
+      const now = new Date();
+      const currentDate = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      const expiryDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+        .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
       const templateData = {
-        // Universal / New Keys (Formatted for Premium PDF look)
         channelName: cachedData.channelName || 'Unknown Channel',
         subscribers: formatNumber(rawSubscribers),
         avgViews: formatNumber(rawAvgViews),
@@ -169,24 +150,7 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         integrationFormat: cachedData.integrationFormat ?? cachedData.integrationType ?? '60-sec shoutout',
         calculatedCpm: formatNumber(rawCalculatedCpm),
         finalValuation: formatNumber(rawFinalValuation),
-        alignmentText: cachedData.alignmentText || fallbackPitch,
-
-        // Instagram specific fields
-        isInstagram,
-        totalFollowers: formatNumber(totalFollowers),
-        accountsReached30d: formatNumber(accountsReached30d),
-        avgReelPlays: formatNumber(avgReelPlays),
-        avgStoryViews: formatNumber(avgStoryViews),
-        topLocation: cachedData.topLocation ?? 'Tier 3',
-        topAgeRange: cachedData.topAgeRange ?? 'N/A',
-        genderSplit: cachedData.genderSplit ?? 'N/A',
-        sponsorNiche: cachedData.sponsorNiche ?? (cachedData.niche || 'Tech'),
-        recentContentFocus: cachedData.recentContentFocus ?? '',
-        reelValuation: formatNumber(reelValuation),
-        storyValuation: formatNumber(storyValuation),
-        resonanceMultiplier: cachedData.resonanceMultiplier ?? 1.0,
-
-        // Legacy / Standard Keys for compatibility/fallback
+        alignmentText: cachedData.alignmentText || aiParagraph,
         subscriberCount: formatNumber(rawSubscribers),
         averageViews: formatNumber(rawAvgViews),
         engagementRate: typeof rawEngagement === 'number' ? parseFloat(rawEngagement.toFixed(2)) : rawEngagement,
@@ -195,25 +159,19 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         audienceGeo: cachedData.targetRegion ?? cachedData.audienceGeo ?? 'Tier 3 India/Asia',
         integrationType: cachedData.integrationFormat ?? cachedData.integrationType ?? '60-sec shoutout',
         cpm: formatNumber(rawCalculatedCpm),
-
-        // Core / Static Layout fields
         channelAvatarUrl: cachedData.channelAvatarUrl,
         recentVideos: (cachedData.recentVideos || []).map((video: any) => ({
           title: video.title,
           viewCount: formatNumber(video.viewCount)
         })),
-        currentDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        currentDate,
+        expiryDate,
         niche: cachedData.niche || 'Tech',
         baseNicheCpm: formatNumber(baseNicheCpm),
         geoMultiplier,
         integrationMultiplier,
-
-        // Added parameters for Section 3 Checklist compatibility
         viewRate: cappedViewRate,
         engagementLabel,
-        reachRatio,
-        reachLabel,
-        reachContext,
         benchmarkLow,
         benchmarkHigh,
         benchmarkPosition,
@@ -224,6 +182,7 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         deliverableStarter,
         deliverableStandard,
         deliverablePremium,
+        monthlyRetainerEstimate,
         floorPrice,
         recommendedFee,
         exclusivityFee,
@@ -234,7 +193,7 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         aiParagraph
       };
 
-      const pdfBuffer = await generateMediaKit(templateData);
+      const pdfBuffer = await generateMediaKit(templateData, 'youtube');
 
       reply.header('Content-Type', 'application/pdf');
       reply.header('Content-Disposition', 'attachment; filename="MediaKit.pdf"');

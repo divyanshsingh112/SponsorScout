@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { PaymentService } from '../services/payment.service';
 import { fetchAndCalculateStats } from '../services/youtube.service';
 import { getCachedChannel } from '../services/redis.service';
-import { generateAlignmentPitch } from '../services/ai.service';
+import { generateAlignmentPitch, generateInstagramAlignmentPitch } from '../services/ai.service';
 
 interface PayBody {
   channelId: string;
@@ -62,20 +62,35 @@ const paymentRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     brandName?: string;
     audienceGeo?: string;
     integrationType?: string;
-    // Instagram specific fields
+    // Instagram specific fields (expanded)
     platform?: string;
     totalFollowers?: number;
+    totalFollowing?: number;
     accountsReached30d?: number;
     avgReelPlays?: number;
     avgStoryViews?: number;
+    avgReelLikes?: number;
+    avgReelComments?: number;
+    avgReelShares?: number;
+    avgReelSaves?: number;
     topLocation?: string;
     topAgeRange?: string;
     genderSplit?: string;
+    femalePercentage?: number;
     sponsorNiche?: string;
+    brandIndustry?: string;
     recentContentFocus?: string;
+    contentPillars?: string[] | string;
+    postingFrequency?: string;
+    mostRecentReelTopic?: string;
+    secondRecentReelTopic?: string;
+    thirdRecentReelTopic?: string;
     reelValuation?: number;
     storyValuation?: number;
     niche?: string;
+    displayName?: string;
+    topCountry?: string;
+    topCity?: string;
   }
 
   fastify.post<{ Body: UnlockBody }>('/api/unlock-channel', async (request, reply) => {
@@ -94,7 +109,7 @@ const paymentRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       let cachedData = await getCachedChannel(channelId);
       const platform = additionalData.platform || cachedData?.platform || 'youtube';
       let recentVideos = cachedData?.recentVideos || additionalData?.recentVideos || [];
-      let channelName = cachedData?.channelName || additionalData?.channelName || 'Unknown Channel';
+      let channelName = cachedData?.channelName || additionalData?.channelName || additionalData?.displayName || 'Unknown Channel';
       let niche = cachedData?.niche || additionalData?.niche || 'Tech';
       let targetSponsor = additionalData?.targetSponsor || cachedData?.targetSponsor || cachedData?.brandName || additionalData?.brandName || 'Sponsor Brand';
 
@@ -116,28 +131,58 @@ const paymentRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       
       const creatorName = channelName;
       const brandName = targetSponsor;
-      const brandCategory = platform === 'instagram' ? (additionalData?.sponsorNiche || cachedData?.sponsorNiche || niche) : niche;
+      const brandCategory = platform === 'instagram' ? (additionalData?.brandIndustry || additionalData?.sponsorNiche || cachedData?.sponsorNiche || niche) : niche;
       const geoTier = platform === 'instagram' 
         ? (additionalData?.topLocation || cachedData?.topLocation || additionalData?.targetRegion || cachedData?.targetRegion || 'Tier 3')
         : (additionalData?.targetRegion || cachedData?.targetRegion || additionalData?.audienceGeo || cachedData?.audienceGeo || 'Tier 3 India/Asia');
       const placementFormat = platform === 'instagram'
-        ? 'Reels & Stories'
+        ? (additionalData?.integrationFormat || cachedData?.integrationFormat || additionalData?.integrationType || cachedData?.integrationType || 'Reels & Stories')
         : (additionalData?.integrationFormat || cachedData?.integrationFormat || additionalData?.integrationType || cachedData?.integrationType || '60-sec shoutout');
 
-      const recentTitles = platform === 'instagram'
-        ? [additionalData?.recentContentFocus || cachedData?.recentContentFocus || '']
-        : recentVideos.slice(0, 5).map((v: any) => v.title || 'Unknown Video');
+      if (platform === 'instagram') {
+        // Process content pillars
+        let contentPillars: string[] = [];
+        const rawPillars = additionalData?.contentPillars || cachedData?.contentPillars || '';
+        if (Array.isArray(rawPillars)) {
+          contentPillars = rawPillars;
+        } else if (typeof rawPillars === 'string' && rawPillars.trim()) {
+          contentPillars = rawPillars.split(',').map((s: string) => s.trim()).filter(Boolean);
+        }
 
-      alignmentText = await generateAlignmentPitch({
-        creatorName,
-        platform,
-        niche,
-        recentVideos: recentTitles,
-        brandName,
-        brandCategory,
-        geoTier,
-        placementFormat
-      });
+        // Build recent content topics from reel topics
+        const recentTopics = [
+          additionalData?.mostRecentReelTopic || cachedData?.mostRecentReelTopic,
+          additionalData?.secondRecentReelTopic || cachedData?.secondRecentReelTopic,
+          additionalData?.thirdRecentReelTopic || cachedData?.thirdRecentReelTopic,
+          additionalData?.recentContentFocus || cachedData?.recentContentFocus,
+        ].filter(Boolean);
+
+        // BUG 03 FIX: Use Instagram-specific Groq prompt
+        alignmentText = await generateInstagramAlignmentPitch({
+          creatorName,
+          platform: 'instagram',
+          niche,
+          recentVideos: recentTopics.length > 0 ? recentTopics : contentPillars,
+          brandName,
+          brandCategory,
+          geoTier,
+          placementFormat,
+          contentPillars,
+        });
+      } else {
+        const recentTitles = recentVideos.slice(0, 5).map((v: any) => v.title || 'Unknown Video');
+
+        alignmentText = await generateAlignmentPitch({
+          creatorName,
+          platform,
+          niche,
+          recentVideos: recentTitles,
+          brandName,
+          brandCategory,
+          geoTier,
+          placementFormat
+        });
+      }
 
       // 4. Attach alignmentText to the final payload to merge in cache
       const finalPayload = {

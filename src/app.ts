@@ -12,6 +12,8 @@ const app = Fastify({
 import valuationRoutes from './routes/valuation.route';
 import downloadRoutes from './routes/download.route';
 import paymentRoutes from './routes/payment.route';
+import instagramValuationRoutes from './routes/instagram-valuation.route';
+import instagramDownloadRoutes from './routes/instagram-download.route';
 import cors from '@fastify/cors';
 
 // Register a simple health-check GET endpoint
@@ -23,6 +25,8 @@ app.register(cors, { origin: '*' });
 app.register(valuationRoutes);
 app.register(downloadRoutes);
 app.register(paymentRoutes);
+app.register(instagramValuationRoutes);
+app.register(instagramDownloadRoutes);
 
 
 const start = async () => {

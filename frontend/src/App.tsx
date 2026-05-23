@@ -1,7 +1,8 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import axios from 'axios';
 import { Download, CheckCircle, Lock, AlertCircle, Sparkles, Globe, Target, Video, Bookmark, Database, Cpu, FileDown, ArrowRight, Menu, X, ArrowUpRight, ShieldCheck } from 'lucide-react';
-import PitchDeckWizard from './components/PitchDeckWizard';
+import YoutubeWizard from './components/YoutubeWizard';
+import InstagramWizard from './components/InstagramWizard';
 
 export interface ChannelData {
   channelId: string;
@@ -153,7 +154,7 @@ const HowItWorksSection = React.memo(() => {
               Download the PDF
             </span>
             <p className="text-slate-400 text-sm leading-relaxed">
-              Generate a ready-to-send 3-page Agency Pitch Deck containing your verified rates, metrics, and custom AI pitch text.
+              Generate a ready-to-send 5-page Agency Pitch Deck containing your verified rates, metrics, and custom AI pitch text.
             </p>
           </div>
         </div>
@@ -292,6 +293,45 @@ function App() {
   const [transactionId] = useState('');
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'success'>('idle');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedFormat, setSelectedFormat] = useState<'reels' | 'stories' | 'combined'>('combined');
+
+  // Reset selected format when channelData changes
+  useEffect(() => {
+    if (channelData) {
+      setSelectedFormat('combined');
+    }
+  }, [channelData]);
+
+  const getDisplayFee = () => {
+    if (!channelData) return 0;
+    if (wizardValues.platform === 'instagram') {
+      if (selectedFormat === 'reels') return channelData.reelValuation || 0;
+      if (selectedFormat === 'stories') return channelData.storyValuation || 0;
+      return (channelData.reelValuation || 0) + (channelData.storyValuation || 0);
+    }
+    return channelData.calculated_sponsor_fee_inr || 0;
+  };
+
+  const displayFee = getDisplayFee();
+
+  const getUnlockButtonText = () => {
+    if (wizardValues.platform === 'instagram') {
+      if (selectedFormat === 'reels') return 'Unlock Reels-Only Pitch Deck (₹19)';
+      if (selectedFormat === 'stories') return 'Unlock Stories-Only Pitch Deck (₹19)';
+      return 'Unlock 5-Page Pitch Deck (₹29)';
+    }
+    return 'Unlock 5-Page Pitch Deck (₹29)';
+  };
+
+  const getTopmateUrl = () => {
+    if (wizardValues.platform === 'instagram') {
+      if (selectedFormat === 'reels' || selectedFormat === 'stories') {
+        // ₹19 topmate link
+        return 'https://topmate.io/sponsorscout/2109766?amount=19'; 
+      }
+    }
+    return TOPMATE_URL;
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -340,6 +380,11 @@ function App() {
   const handleUnlock = () => {
     localStorage.setItem('pending_pdf_channel', wizardValues.channelId);
     
+    const formatLabel = wizardValues.platform === 'instagram'
+      ? (selectedFormat === 'reels' ? 'Reels Only' : selectedFormat === 'stories' ? 'Stories Only' : 'Reels & Stories')
+      : wizardValues.integrationType;
+    const finalFee = getDisplayFee();
+
     // Bundle metrics for lock details
     const pitchDeckData = {
       channelId: wizardValues.channelId,
@@ -349,9 +394,11 @@ function App() {
       engagement: channelData?.engagementRate || channelData?.engagement || 0,
       targetSponsor: wizardValues.brandName,
       targetRegion: wizardValues.platform === 'instagram' ? wizardValues.topLocation : wizardValues.audienceGeo,
-      integrationFormat: wizardValues.integrationType,
+      integrationFormat: formatLabel,
+      integrationType: formatLabel,
       calculatedCpm: channelData?.cpm || 0,
-      finalValuation: channelData?.calculated_sponsor_fee_inr || channelData?.finalValuation || 0,
+      finalValuation: finalFee,
+      calculated_sponsor_fee_inr: finalFee,
       channelAvatarUrl: channelData?.channelAvatarUrl || '',
       recentVideos: channelData?.recentVideos || [],
       // Instagram fields
@@ -367,6 +414,10 @@ function App() {
       recentContentFocus: channelData?.recentContentFocus || wizardValues.recentContentFocus,
       reelValuation: channelData?.reelValuation,
       storyValuation: channelData?.storyValuation,
+      niche: wizardValues.niche,
+      displayName: channelData?.displayName || channelData?.channelName,
+      topCountry: wizardValues.topCountry,
+      topCity: wizardValues.topCity,
     };
     localStorage.setItem('pending_pitch_deck_data', JSON.stringify(pitchDeckData));
     
@@ -378,6 +429,54 @@ function App() {
 
   const simulatePayment = async () => {
     try {
+      const unlockSecret = import.meta.env.VITE_UNLOCK_SECRET_KEY || '';
+      
+      const formatLabel = wizardValues.platform === 'instagram'
+        ? (selectedFormat === 'reels' ? 'Reels Only' : selectedFormat === 'stories' ? 'Stories Only' : 'Reels & Stories')
+        : wizardValues.integrationType;
+      const finalFee = getDisplayFee();
+
+      const pitchDeckData = {
+        channelId: wizardValues.channelId,
+        channelName: channelData?.channelName || 'Unknown Channel',
+        subscribers: channelData?.channelStatistics?.subscriberCount || channelData?.subscribers || 'N/A',
+        avgViews: channelData?.averageViews || channelData?.avgViews || 0,
+        engagement: channelData?.engagementRate || channelData?.engagement || 0,
+        targetSponsor: wizardValues.brandName,
+        targetRegion: wizardValues.platform === 'instagram' ? wizardValues.topLocation : wizardValues.audienceGeo,
+        integrationFormat: formatLabel,
+        integrationType: formatLabel,
+        calculatedCpm: channelData?.cpm || 0,
+        finalValuation: finalFee,
+        calculated_sponsor_fee_inr: finalFee,
+        channelAvatarUrl: channelData?.channelAvatarUrl || '',
+        recentVideos: channelData?.recentVideos || [],
+        // Instagram fields
+        platform: wizardValues.platform,
+        totalFollowers: channelData?.totalFollowers || wizardValues.totalFollowers,
+        accountsReached30d: channelData?.accountsReached30d || wizardValues.accountsReached30d,
+        avgReelPlays: channelData?.avgReelPlays || wizardValues.avgReelPlays,
+        avgStoryViews: channelData?.avgStoryViews || wizardValues.avgStoryViews,
+        topLocation: channelData?.topLocation || wizardValues.topLocation,
+        topAgeRange: channelData?.topAgeRange || wizardValues.topAgeRange,
+        genderSplit: channelData?.genderSplit || wizardValues.genderSplit,
+        sponsorNiche: channelData?.sponsorNiche || wizardValues.sponsorNiche,
+        recentContentFocus: channelData?.recentContentFocus || wizardValues.recentContentFocus,
+        reelValuation: channelData?.reelValuation,
+        storyValuation: channelData?.storyValuation,
+        niche: wizardValues.niche,
+        displayName: channelData?.displayName || channelData?.channelName,
+        topCountry: wizardValues.topCountry,
+        topCity: wizardValues.topCity,
+      };
+
+      // Call unlock first so alignment Text gets generated and cache is updated
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/unlock-channel`, {
+        unlockSecret,
+        ...pitchDeckData
+      });
+
+      // Call webhook/payment to finalize standard states
       await axios.post(`${import.meta.env.VITE_API_BASE_URL}/webhook/payment`, {
         transactionId,
         status: 'SUCCESS'
@@ -395,7 +494,7 @@ function App() {
   if (view === 'checkout-interstitial') {
     return (
       <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400 font-sans">Loading Secure Checkout...</div>}>
-        <CheckoutInterstitial topmateUrl={TOPMATE_URL} />
+        <CheckoutInterstitial topmateUrl={getTopmateUrl()} />
       </Suspense>
     );
   }
@@ -549,44 +648,122 @@ function App() {
           <div className="absolute inset-x-12 -top-px h-px bg-gradient-to-r from-transparent via-indigo-500 to-purple-500 pointer-events-none" />
           
           <div className="p-4 sm:p-8">
-            <PitchDeckWizard
-              loading={loading}
-              initialValues={wizardValues}
-              onEvaluate={async (wizardData) => {
-                // Synchronize local state
-                setWizardValues(wizardData);
+            {/* Platform Selector Toggle */}
+            <div className="flex justify-center mb-8">
+              <div className="bg-slate-950/80 p-1.5 rounded-2xl border border-slate-800/80 inline-flex items-center gap-1.5 shadow-inner">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWizardValues({ ...wizardValues, platform: 'youtube' });
+                    setChannelData(null);
+                    setError('');
+                  }}
+                  className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                    wizardValues.platform !== 'instagram'
+                      ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/25'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <Video className="h-4 w-4" />
+                  <span>YouTube Channel</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWizardValues({ ...wizardValues, platform: 'instagram' });
+                    setChannelData(null);
+                    setError('');
+                  }}
+                  className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                    wizardValues.platform === 'instagram'
+                      ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span>Instagram Creator</span>
+                </button>
+              </div>
+            </div>
 
-                setLoading(true);
-                setError('');
-                setChannelData(null);
-                setPaymentStatus('idle');
+            {wizardValues.platform === 'instagram' ? (
+              <InstagramWizard
+                loading={loading}
+                initialValues={wizardValues}
+                onEvaluate={async (wizardData) => {
+                  setWizardValues(wizardData);
+                  setLoading(true);
+                  setError('');
+                  setChannelData(null);
+                  setPaymentStatus('idle');
 
-                try {
-                  const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/evaluate-channel`, {
-                    channelId: wizardData.channelId,
-                    niche: wizardData.niche,
-                    audienceGeo: wizardData.audienceGeo,
-                    brandName: wizardData.brandName,
-                    integrationType: wizardData.integrationType,
-                    platform: wizardData.platform,
-                    totalFollowers: wizardData.totalFollowers ? Number(wizardData.totalFollowers) : undefined,
-                    accountsReached30d: wizardData.accountsReached30d ? Number(wizardData.accountsReached30d) : undefined,
-                    avgReelPlays: wizardData.avgReelPlays ? Number(wizardData.avgReelPlays) : undefined,
-                    avgStoryViews: wizardData.avgStoryViews ? Number(wizardData.avgStoryViews) : undefined,
-                    topLocation: wizardData.topLocation,
-                    topAgeRange: wizardData.topAgeRange,
-                    genderSplit: wizardData.genderSplit,
-                    sponsorNiche: wizardData.sponsorNiche,
-                    recentContentFocus: wizardData.recentContentFocus,
-                  });
-                  setChannelData(res.data);
-                } catch (err: any) {
-                  setError(err.response?.data?.error || 'Failed to evaluate channel. Check ID and try again.');
-                } finally {
-                  setLoading(false);
-                }
-              }}
-            />
+                  try {
+                    const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/evaluate-instagram`, {
+                      channelId: wizardData.channelId,
+                      niche: wizardData.niche,
+                      brandName: wizardData.brandName,
+                      integrationType: wizardData.integrationType,
+                      platform: 'instagram',
+                      totalFollowers: wizardData.totalFollowers,
+                      totalFollowing: wizardData.totalFollowing,
+                      avgReelPlays: wizardData.avgReelPlays,
+                      avgStoryViews: wizardData.avgStoryViews,
+                      avgReelLikes: wizardData.avgReelLikes,
+                      avgReelComments: wizardData.avgReelComments,
+                      avgReelShares: wizardData.avgReelShares,
+                      avgReelSaves: wizardData.avgReelSaves,
+                      topCountry: wizardData.topCountry,
+                      topCity: wizardData.topCity,
+                      topAgeRange: wizardData.topAgeRange,
+                      femalePercentage: wizardData.femalePercentage,
+                      geoTier: wizardData.geoTier,
+                      contentPillars: wizardData.contentPillars,
+                      postingFrequency: wizardData.postingFrequency,
+                      mostRecentReelTopic: wizardData.mostRecentReelTopic,
+                      secondRecentReelTopic: wizardData.secondRecentReelTopic,
+                      thirdRecentReelTopic: wizardData.thirdRecentReelTopic,
+                      brandIndustry: wizardData.brandIndustry,
+                      sponsorNiche: wizardData.sponsorNiche,
+                      displayName: wizardData.displayName,
+                      profileVisits: wizardData.profileVisits,
+                    });
+                    setChannelData(res.data);
+                  } catch (err: any) {
+                    setError(err.response?.data?.error || 'Failed to evaluate Instagram channel. Please try again.');
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              />
+            ) : (
+              <YoutubeWizard
+                loading={loading}
+                initialValues={wizardValues}
+                onEvaluate={async (wizardData) => {
+                  setWizardValues(wizardData);
+                  setLoading(true);
+                  setError('');
+                  setChannelData(null);
+                  setPaymentStatus('idle');
+
+                  try {
+                    const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/evaluate-channel`, {
+                      channelId: wizardData.channelId,
+                      niche: wizardData.niche,
+                      audienceGeo: wizardData.audienceGeo,
+                      brandName: wizardData.brandName,
+                      integrationType: wizardData.integrationType,
+                      platform: 'youtube',
+                    });
+                    setChannelData(res.data);
+                  } catch (err: any) {
+                    setError(err.response?.data?.error || 'Failed to evaluate YouTube channel. Please check ID and try again.');
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              />
+            )}
 
             {error && (
               <div className="mt-6 text-red-400 bg-red-400/10 border border-red-400/20 py-3.5 px-4 rounded-2xl text-center text-sm md:text-base w-full max-w-xl mx-auto font-medium">
@@ -646,7 +823,7 @@ function App() {
                   </div>
 
                   {/* Target metrics */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8 text-left text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8 text-left text-xs font-sans">
                     <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-3 flex items-start gap-2.5">
                       <Target className="h-4 w-4 text-indigo-400 mt-0.5 shrink-0" />
                       <div>
@@ -671,7 +848,11 @@ function App() {
                       <Video className="h-4 w-4 text-indigo-400 mt-0.5 shrink-0" />
                       <div>
                         <div className="text-slate-500 uppercase tracking-wider font-bold text-[9px]">Integration Format</div>
-                        <div className="text-slate-200 font-bold text-sm truncate">{channelData.integrationType || wizardValues.integrationType}</div>
+                        <div className="text-slate-200 font-bold text-sm truncate">
+                          {wizardValues.platform === 'instagram'
+                            ? (selectedFormat === 'reels' ? 'Reels Only' : selectedFormat === 'stories' ? 'Stories Only' : 'Reels & Stories')
+                            : (channelData.integrationType || wizardValues.integrationType)}
+                        </div>
                       </div>
                     </div>
 
@@ -684,19 +865,85 @@ function App() {
                         </div>
                       </div>
                     </div>
+
+                    {/* NEW FEATURE 01: Audience Authenticity Score Teaser */}
+                    {wizardValues.platform === 'instagram' && (
+                      <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-3 flex items-start gap-2.5 sm:col-span-2">
+                        <Sparkles className="h-4 w-4 text-purple-400 mt-0.5 shrink-0 animate-pulse" />
+                        <div className="flex-1">
+                          <div className="text-slate-500 uppercase tracking-wider font-bold text-[9px]">Audience Authenticity Score</div>
+                          {paymentStatus === 'success' ? (
+                            <div className="flex items-center gap-3 mt-1 text-slate-200 text-sm font-bold">
+                              <span>Verified Quality Score:</span>
+                              <span className="text-purple-400">{channelData.authenticityScore || 85}/100</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 mt-1 text-slate-400 text-xs font-medium">
+                              <span className="blur-xs font-bold text-purple-500">Verified Quality: 85/100</span>
+                              <span className="text-[10px] bg-slate-950 px-2 py-0.5 rounded-full border border-slate-850 text-indigo-400 font-bold flex items-center gap-1 shrink-0">
+                                <Lock className="h-2.5 w-2.5" />
+                                Locked
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Price display with lock */}
-                  <div className="bg-slate-900/60 rounded-3xl p-6 md:p-8 border border-slate-800 text-center relative overflow-hidden">
+                  <div className="bg-slate-900/60 rounded-3xl p-6 md:p-8 border border-slate-800 text-center relative overflow-hidden font-sans">
+                    
+                    {/* NEW FEATURE 03: Campaign Format Toggle */}
+                    {wizardValues.platform === 'instagram' && (
+                      <div className="flex justify-center mb-6">
+                        <div className="bg-slate-950/80 p-1.5 rounded-2xl border border-slate-800 inline-flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedFormat('reels')}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                              selectedFormat === 'reels'
+                                ? 'bg-purple-600/35 border border-purple-500/30 text-purple-200'
+                                : 'border border-transparent text-slate-400 hover:text-slate-200'
+                            }`}
+                          >
+                            Reels Only
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedFormat('combined')}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                              selectedFormat === 'combined'
+                                ? 'bg-purple-600/35 border border-purple-500/30 text-purple-200'
+                                : 'border border-transparent text-slate-400 hover:text-slate-200'
+                            }`}
+                          >
+                            Reels + Stories
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedFormat('stories')}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                              selectedFormat === 'stories'
+                                ? 'bg-purple-600/35 border border-purple-500/30 text-purple-200'
+                                : 'border border-transparent text-slate-400 hover:text-slate-200'
+                            }`}
+                          >
+                            Stories Only
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="text-slate-400 font-semibold mb-4 uppercase tracking-wider text-xs">Calibrated Pitch Deck Valuation</div>
 
                     {paymentStatus === 'success' ? (
                       <div className="text-5xl md:text-7xl font-black bg-gradient-to-r from-emerald-400 to-cyan-400 text-transparent bg-clip-text">
-                        ₹{channelData.calculated_sponsor_fee_inr.toLocaleString()}
+                        ₹{displayFee.toLocaleString()}
                       </div>
                     ) : (
                       <div className="text-5xl md:text-7xl font-black text-slate-500 blur-lg select-none transition-all duration-500">
-                        ₹{channelData.calculated_sponsor_fee_inr.toLocaleString()}
+                        ₹{displayFee.toLocaleString()}
                       </div>
                     )}
 
@@ -707,7 +954,7 @@ function App() {
                           className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-2xl font-bold text-base shadow-xl shadow-indigo-500/25 transition-all hover:scale-[1.01] active:scale-95 flex items-center justify-center space-x-2.5 cursor-pointer"
                         >
                           <Lock className="h-5 w-5" />
-                          <span>Unlock 3-Page Pitch Deck (₹29)</span>
+                          <span>{getUnlockButtonText()}</span>
                         </button>
                       </div>
                     )}

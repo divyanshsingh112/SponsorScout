@@ -1,0 +1,40 @@
+<!-- PAGE 1: COVER & EXECUTIVE SUMMARY (YouTube) -->
+<div class="page">
+    <div class="page-header">
+        <span class="brand">SponsorScout Proposals</span>
+        <span class="page-num">01 / 05</span>
+    </div>
+    
+    <div class="hero">
+        {{#if channelAvatarUrl}}
+        <img src="{{channelAvatarUrl}}" alt="{{channelName}}" class="avatar">
+        {{/if}}
+        <h1>{{channelName}}</h1>
+        <p>Exclusive Sponsorship Proposal for <span class="gradient-text" style="-webkit-text-fill-color: initial; font-weight: 800;">{{targetSponsor}}</span></p>
+        
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="stat-val">{{subscribers}}</div>
+                <div class="stat-lbl">Subscribers</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val">{{avgViews}}</div>
+                <div class="stat-lbl">Avg. Views</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val">{{viewRate}}%</div>
+                <div class="stat-lbl">{{engagementLabel}}</div>
+            </div>
+        </div>
+        
+        <div class="fee-card">
+            <div class="lbl">Recommended Placement Fee</div>
+            <div class="val">₹{{finalValuation}}</div>
+        </div>
+    </div>
+    
+    <div class="page-footer">
+        <span>Calibrated: {{currentDate}} — Data valid for 30 days. Re-generate after {{expiryDate}}.</span>
+        <span>Target placement: {{integrationFormat}}</span>
+    </div>
+</div>
