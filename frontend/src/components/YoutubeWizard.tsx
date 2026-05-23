@@ -31,9 +31,9 @@ export default function YoutubeWizard({ loading, onEvaluate, initialValues }: Yo
   const [step, setStep] = useState(1);
   const [channelId, setChannelId] = useState(initialValues?.channelId || '');
   const [niche, setNiche] = useState(initialValues?.niche || 'Tech & Gadgets');
-  const [audienceGeo, setAudienceGeo] = useState(initialValues?.audienceGeo || 'Tier 3 India/Asia');
+  const [audienceGeo, setAudienceGeo] = useState(initialValues?.audienceGeo || 'India');
   const [brandName, setBrandName] = useState(initialValues?.brandName || '');
-  const [integrationType, setIntegrationType] = useState(initialValues?.integrationType || '60-sec shoutout');
+  const [integrationType, setIntegrationType] = useState(initialValues?.integrationType || '60-second integration');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -212,11 +212,15 @@ export default function YoutubeWizard({ loading, onEvaluate, initialValues }: Yo
                     onChange={(e) => setNiche(e.target.value)}
                     className="block w-full bg-slate-950/60 border border-slate-800 rounded-xl py-3.5 px-4 text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all cursor-pointer hover:bg-slate-900/60 text-sm appearance-none"
                   >
+                    <option value="Finance & Investing">Finance & Investing</option>
                     <option value="Tech & Gadgets">Tech & Gadgets</option>
-                    <option value="Finance & Crypto">Finance & Crypto</option>
-                    <option value="Gaming">Gaming</option>
-                    <option value="Lifestyle & Vlog">Lifestyle & Vlog</option>
+                    <option value="Education & Study">Education & Study</option>
+                    <option value="Fitness & Health">Fitness & Health</option>
                     <option value="Beauty & Fashion">Beauty & Fashion</option>
+                    <option value="Food & Cooking">Food & Cooking</option>
+                    <option value="Lifestyle & Vlog">Lifestyle & Vlog</option>
+                    <option value="Gaming">Gaming</option>
+                    <option value="Comedy & Entertainment">Comedy & Entertainment</option>
                   </select>
                 </div>
 
@@ -230,9 +234,10 @@ export default function YoutubeWizard({ loading, onEvaluate, initialValues }: Yo
                     onChange={(e) => setAudienceGeo(e.target.value)}
                     className="block w-full bg-slate-950/60 border border-slate-800 rounded-xl py-3.5 px-4 text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all cursor-pointer hover:bg-slate-900/60 text-sm appearance-none"
                   >
-                    <option value="Tier 1 US/UK">Tier 1 US/UK (Highest CPM)</option>
-                    <option value="Tier 2 EU/AUS">Tier 2 EU/AUS (Medium CPM)</option>
-                    <option value="Tier 3 India/Asia">Tier 3 India/Asia (Standard CPM)</option>
+                    <option value="US / UK / Canada / AU">US / UK / Canada / AU (Tier 1)</option>
+                    <option value="UAE / Singapore / Saudi">UAE / Singapore / Saudi (Tier 2)</option>
+                    <option value="India">India (Tier 3)</option>
+                    <option value="Other / Mixed">Other / Mixed</option>
                   </select>
                 </div>
               </div>
@@ -304,8 +309,12 @@ export default function YoutubeWizard({ loading, onEvaluate, initialValues }: Yo
                     onChange={(e) => setIntegrationType(e.target.value)}
                     className="block w-full bg-slate-950/60 border border-slate-800 rounded-xl py-3.5 px-4 text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all cursor-pointer hover:bg-slate-900/60 text-sm appearance-none"
                   >
-                    <option value="60-sec shoutout">60-sec Integrated Shoutout</option>
-                    <option value="Dedicated Video">Full Dedicated Video (Premium)</option>
+                    <option value="15-second mention">15-second mention (End card or transition shoutout)</option>
+                    <option value="30-second shoutout">30-second shoutout (Brief mid-roll callout)</option>
+                    <option value="60-second integration">60-second integration (Most Popular)</option>
+                    <option value="Dedicated video">Dedicated video (Full video built around the brand)</option>
+                    <option value="Dedicated video + Community post">Dedicated video + Community post</option>
+                    <option value="Dedicated video + Shorts + Community">Dedicated video + Shorts + Community</option>
                   </select>
                 </div>
               </div>

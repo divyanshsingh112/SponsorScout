@@ -16,41 +16,39 @@
         <table class="roi-table">
             <thead>
                 <tr>
-                    <th>Placement Format</th>
-                    <th>Reach / Base CPM</th>
-                    <th>Multipliers Applied</th>
-                    <th>Estimated Value</th>
+                    <th>Pricing Dimension</th>
+                    <th>Calibrated Value & Multipliers</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td><strong>Instagram Reel</strong></td>
-                    <td>{{avgReelPlays}} avg. plays / ₹100 CPM</td>
-                    <td>Geo: {{geoMultiplier}}x | Resonance: {{resonanceMultiplier}}x</td>
-                    <td><strong>₹{{reelValuation}} INR</strong></td>
+                    <td>Creator Performance Tier</td>
+                    <td><strong>{{tierLabel}}</strong> (Midpoint Base Reel: ₹{{baseRate}})</td>
                 </tr>
                 <tr>
-                    <td><strong>Instagram Story</strong></td>
-                    <td>{{avgStoryViews}} avg. views / ₹200 CPM</td>
-                    <td>Geo: {{geoMultiplier}}x | Resonance: {{resonanceMultiplier}}x</td>
-                    <td><strong>₹{{storyValuation}} INR</strong></td>
+                    <td>Content Niche Weight</td>
+                    <td><strong>{{niche}} — {{resonanceMultiplier}}x</strong></td>
                 </tr>
                 <tr>
-                    <td><strong>Combined Campaign Total</strong></td>
-                    <td colspan="2">Reels & Stories Integrated Synergy</td>
+                    <td>Engagement Signal Weight</td>
+                    <td><strong>{{engagementSignal}}% ER — {{engagementMultiplier}}x</strong></td>
+                </tr>
+                <tr>
+                    <td>Audience Geo Reach Weight</td>
+                    <td><strong>{{geoLabel}} — {{geoMultiplier}}x</strong></td>
+                </tr>
+                <tr>
+                    <td>Integration Format Weight</td>
+                    <td><strong>{{integrationFormat}} — {{formatMultiplier}}x</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>Final Calibrated Valuation</strong></td>
                     <td><strong>₹{{finalValuation}} INR</strong></td>
-                </tr>
-                <!-- NEW FEATURE 05: Monthly Retainer Estimate -->
-                <tr style="background: #f0eeff;">
-                    <td><strong>Monthly Retainer Estimate</strong></td>
-                    <td colspan="2">4 posts/month ongoing partnership</td>
-                    <td><strong style="color: #4f46e5;">₹{{monthlyRetainerEstimate}} INR</strong></td>
                 </tr>
             </tbody>
         </table>
 
         <!-- YOU VS INDUSTRY BENCHMARK SECTION -->
-        <!-- BUG 05 FIX: Instagram-specific ranges and label -->
         <div class="benchmark-section">
             <h3 class="benchmark-title">YOU VS. INSTAGRAM INDUSTRY BENCHMARK</h3>
             <p class="benchmark-subtitle">Where your valuation stands compared to peer Instagram creators in your niche</p>
@@ -64,7 +62,7 @@
                 </div>
                 <span class="benchmark-high">₹{{benchmarkHigh}}</span>
             </div>
-            <p class="benchmark-note">Calculated using SponsorScout Dynamic Niche CPM Matrix — Instagram Benchmarks</p>
+            <p class="benchmark-note">{{benchmarkNote}}</p>
         </div>
 
         <!-- 3-TIER PACKAGE TABLE -->
@@ -94,17 +92,26 @@
                         <td>{{deliverablePremium}}</td>
                         <td><span class="tier-price">₹{{tierPremium}} INR</span></td>
                     </tr>
+                    <tr>
+                        <td><span class="tier-badge" style="background: #1a1a2e; color: #60a5fa;">Monthly</span></td>
+                        <td>{{retainerDeliverableLabel}}</td>
+                        <td><span class="tier-price" style="color: #1a1a2e; font-weight: 800;">₹{{monthlyRetainerEstimate}} INR</span></td>
+                    </tr>
                 </tbody>
             </table>
             <p class="tier-note">*Packages are customized based on current platform engagement and average reach projections.</p>
         </div>
 
-        <div class="formula-box">
+        <p class="pricing-transparency-note" style="font-size: 8px; color: #94a3b8; line-height: 1.4; margin-top: 15px; font-style: italic; border-top: 1px dashed #e2e8f0; padding-top: 10px; text-align: center;">
+            {{pricingMethodologyNote}}
+        </p>
+
+        <div class="formula-box" style="margin-top: 15px;">
             Instagram Valuation Formula:<br>
-            Reel = (Plays * 100 * Geo * Resonance) / 1000 | Story = (Views * 200 * Geo * Resonance) / 1000
+            Valuation = Base Tier Rate × Niche × Engagement × Geo × Format
         </div>
 
-        <div style="font-size: 10px; color: #94a3b8; line-height: 1.5; margin-top: 30px; text-align: center; font-style: italic; border-top: 1px dashed #e2e8f0; padding-top: 15px;">
+        <div style="font-size: 10px; color: #94a3b8; line-height: 1.5; margin-top: 20px; text-align: center; font-style: italic; border-top: 1px dashed #e2e8f0; padding-top: 15px;">
             Data self-reported by creator via Instagram Professional Dashboard. SponsorScout recommends requesting live dashboard screenshots before contract finalization.
         </div>
     </div>

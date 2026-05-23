@@ -1,0 +1,113 @@
+<USER_REQUEST>
+make a implementation plan first and i'll review it and change some things, make the plan for this: # SPONSORSCOUT — ANTIGRAVITY INSTRUCTION FILE v4.0
+**Date:** 23-05-2026
+**Scope:** Pricing engine complete rebuild + YouTube format fix + benchmark corrections
+**Rule:** This file must be executed fresh. Previous instruction files were already
+executed. Do not re-apply any instruction from previous files.
+**Format rule:** No code in this file. Pure instructions only.
+**Critical rule:** Do NOT touch any UI, template, wizard, or payment flow
+that is already working correctly. Only change what this file explicitly describes.
+
+---
+
+# PART 1 — CRITICAL: COMPLETE PRICING ENGINE REBUILD
+
+This is the most important section of this entire file.
+The current pricing formula is fundamentally wrong and must be replaced entirely.
+
+---
+
+## WHY THE CURRENT FORMULA IS WRONG
+
+The current engine calculates sponsorship rates using:
+Final Fee = (Average Views × ₹100 CPM) / 1,000
+
+This formula calculates AdSense ad revenue per video — not sponsorship value.
+These are completely different numbers. AdSense CPM and sponsorship CPM
+are not the same metric. A creator with 38,441 average views on a 326K
+subscriber YouTube channel should command ₹80,000–₹2,00,000 per integration
+from an Indian brand. The current formula outputs ₹3,844.
+That is 20–50x below the real Indian market rate.
+
+The entire pricing logic — for both YouTube and Instagram — must be deleted
+and replaced with the flat-rate tiered system described below.
+
+---
+
+## THE NEW PRICING MODEL: FLAT-RATE TIERED BASE + MULTIPLIERS
+
+The new model works in 5 sequential steps for both platforms.
+Each step feeds into the next.
+
+---
+
+### STEP A — DETERMINE THE BASE RATE FROM TIER TABLE
+
+The base rate is a single midpoint value looked up from a fixed table
+based on the creator's audience size (subscribers for YouTube,
+followers for Instagram) and their content niche.
+
+The base rate represents the market m
+<truncated 18029 bytes>
+ ₹35,000
+Engagement: reach ratio = 50,000/45,000 × 100 = 111.1%
+→ 40%+ bracket → 1.5x → ₹52,500
+Geo: Tier 3 India → 1.0x → ₹52,500
+Format: 60-sec Reel → 1.0x → ₹52,500 → rounds to ₹52,500
+
+New output: ₹52,500
+Old output was: ₹9,000
+Improvement: 5.8x closer to real market rate.
+
+Benchmark range for Micro High, Gaming:
+Base: ₹20,000–₹70,000 (Gaming = 1.0x, no multiplier)
+dummy_id at ₹52,500 → marker at approximately 47% of bar.
+
+---
+
+## TEST CASE 04 — YouTube: Format Dropdown Verification
+
+Open the YouTube wizard.
+Verify the integration format dropdown contains ONLY:
+— 15-second mention
+— 30-second shoutout
+— 60-second integration
+— Dedicated video
+— Dedicated video + Community post
+
+Verify there is NO option containing the words:
+"Reel", "Stories", "Instagram", or "Full Package"
+
+If any Instagram-format string is present in the YouTube dropdown,
+the bug is not fixed. Go back and remove it.
+
+---
+
+# PART 6 — DO NOT TOUCH LIST
+
+Do not modify any of the following:
+- Instagram wizard component and its 7-step form
+- Authenticity Score calculation logic
+- Data freshness indicator
+- Screenshot guidance tooltips
+- Reach-to-Follower Ratio vs True Engagement Rate label switching
+- YouTube API data fetching logic
+- Topmate checkout and Loop-back interceptor
+- POST /api/unlock-channel and Shared Secret middleware
+- Vercel environment variables
+- Resend and Cloudflare email routing
+- Marketing storefront and landing page
+- Api2Pdf call structure
+- Upstash Redis caching
+
+---
+
+*End of Antigravity Instruction File v4.0*
+
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-05-24T00:17:53+05:30.
+</ADDITIONAL_METADATA>
+<USER_SETTINGS_CHANGE>
+The user changed setting `Model Selection` from None to Claude Opus 4.6 (Thinking). No need to comment on this change if the user doesn't ask about it. If reporting what model you are, please use a human readable name instead of the exact string.
+</USER_SETTINGS_CHANGE>

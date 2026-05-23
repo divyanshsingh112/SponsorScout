@@ -1,6 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import axios from 'axios';
-import { Download, CheckCircle, Lock, AlertCircle, Sparkles, Globe, Target, Video, Bookmark, Database, Cpu, FileDown, ArrowRight, Menu, X, ArrowUpRight, ShieldCheck } from 'lucide-react';
+import { Download, CheckCircle, Lock, AlertCircle, Sparkles, Globe, Target, Video, Bookmark, Database, Cpu, FileDown, ArrowRight, Menu, X, ArrowUpRight } from 'lucide-react';
 import YoutubeWizard from './components/YoutubeWizard';
 import InstagramWizard from './components/InstagramWizard';
 
@@ -39,9 +39,9 @@ const getInitialWizardValues = () => {
   return {
     channelId: '',
     niche: 'Tech & Gadgets',
-    audienceGeo: 'Tier 3 India/Asia',
+    audienceGeo: 'India',
     brandName: '',
-    integrationType: '60-sec shoutout',
+    integrationType: '60-second integration',
     platform: 'youtube',
     totalFollowers: '',
     accountsReached30d: '',
@@ -63,10 +63,6 @@ const HeroSection = React.memo(({ onCtaClick }: { onCtaClick: () => void }) => {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
       
       <div className="max-w-4xl mx-auto relative z-10 flex flex-col items-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-6 animate-pulse">
-          <ShieldCheck className="h-4 w-4" />
-          <span>Over 10,000+ creators analyzed</span>
-        </div>
 
         <h1 className="text-4xl sm:text-6xl md:text-8xl font-extrabold tracking-tight leading-[1.1] mb-6">
           <span className="block bg-gradient-to-r from-white via-slate-100 to-slate-400 text-transparent bg-clip-text">
@@ -859,9 +855,9 @@ function App() {
                     <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-3 flex items-start gap-2.5">
                       <Bookmark className="h-4 w-4 text-indigo-400 mt-0.5 shrink-0" />
                       <div>
-                        <div className="text-slate-500 uppercase tracking-wider font-bold text-[9px]">Calculated CPM</div>
+                        <div className="text-slate-500 uppercase tracking-wider font-bold text-[9px]">Pricing Model</div>
                         <div className="text-slate-200 font-bold text-sm">
-                          {wizardValues.platform === 'instagram' ? '₹100 Reel / ₹200 Story' : `₹${channelData.cpm || 'TBD'}`}
+                          Tier-Based Market Rate
                         </div>
                       </div>
                     </div>
@@ -944,6 +940,17 @@ function App() {
                     ) : (
                       <div className="text-5xl md:text-7xl font-black text-slate-500 blur-lg select-none transition-all duration-500">
                         ₹{displayFee.toLocaleString()}
+                      </div>
+                    )}
+
+                    {paymentStatus !== 'success' && (
+                      <div className="mt-3 relative group inline-block">
+                        <span className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold underline underline-offset-2 cursor-help transition-colors">
+                          How is this calculated?
+                        </span>
+                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 p-3 bg-slate-900 border border-slate-800 rounded-xl text-left text-xs text-slate-350 shadow-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-30">
+                          Your rate is based on your subscriber/follower tier, content niche commercial value, engagement quality, and audience geography. This is the market rate — not an estimate based on AdSense.
+                        </div>
                       </div>
                     )}
 

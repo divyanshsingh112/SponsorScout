@@ -1,0 +1,50 @@
+const fs = require('fs');
+const path = require('path');
+
+const oneDriveDir = 'c:\\Users\\sdivy\\OneDrive';
+
+function walkDir(dir, callback) {
+  try {
+    const files = fs.readdirSync(dir);
+    for (const file of files) {
+      const filePath = path.join(dir, file);
+      let stat;
+      try {
+        stat = fs.statSync(filePath);
+      } catch (e) {
+        continue;
+      }
+      if (stat.isDirectory()) {
+        walkDir(filePath, callback);
+      } else {
+        callback(filePath);
+      }
+    }
+  } catch (e) {
+    // Ignore error
+  }
+}
+
+console.log('Searching all files in OneDrive recursively...');
+let foundCount = 0;
+
+walkDir(oneDriveDir, (filePath) => {
+  if (filePath.endsWith('.md') || filePath.endsWith('.txt') || filePath.endsWith('.json') || filePath.endsWith('.js') || filePath.endsWith('.ts')) {
+    try {
+      const content = fs.readFileSync(filePath);
+      const str = content.toString('utf8');
+      if (str.includes('Gaming') && str.includes('Comedy') && str.includes('1.6x') && str.includes('0.85x')) {
+        console.log(`>>> FOUND MATCHING KEYWORDS IN FILE: ${filePath}`);
+        foundCount++;
+        
+        // Save to file
+        fs.writeFileSync('found_instructions_onedrive.txt', str, 'utf8');
+        console.log('Saved to found_instructions_onedrive.txt!');
+      }
+    } catch (e) {
+      // Ignore read errors
+    }
+  }
+});
+
+console.log(`Done! Found ${foundCount} matching files.`);

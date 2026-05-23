@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { getCachedChannel, cacheChannel } from '../services/redis.service';
 import { fetchAndCalculateStats } from '../services/youtube.service';
-import { cpmCalculator } from '../utils/cpm';
+import { calculateYouTubePrice } from '../utils/pricing-engine';
 
 /**
  * YouTube-specific valuation route.
@@ -44,11 +44,17 @@ const valuationRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => 
       // Fetch YouTube statistics
       const stats = await fetchAndCalculateStats(channelId);
 
-      // Dynamic CPM matrix logic
-      const cpmResult = cpmCalculator(niche, audienceGeo, integrationType);
+      const subscribers = Number(stats.channelStatistics?.subscriberCount ?? 0);
 
-      // Calculate sponsor fee: averageViews * (cpm / 1000)
-      const calculated_sponsor_fee_inr = Math.max(0, Math.round(stats.averageViews * (cpmResult.cpm / 1000)));
+      // New pricing engine calculation
+      const priceResult = calculateYouTubePrice({
+        platform: 'youtube',
+        audienceSize: subscribers,
+        niche,
+        audienceGeo,
+        integrationType,
+        averageViews: stats.averageViews
+      });
 
       // Structure final JSON object
       const finalObject = {
@@ -58,11 +64,25 @@ const valuationRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => 
         brandName,
         integrationType,
         platform: 'youtube',
-        cpm: cpmResult.cpm,
-        baseNicheCpm: cpmResult.baseNicheCpm,
-        geoMultiplier: cpmResult.geoMultiplier,
-        integrationMultiplier: cpmResult.integrationMultiplier,
-        calculated_sponsor_fee_inr,
+        calculated_sponsor_fee_inr: priceResult.finalFee,
+        tierLabel: priceResult.tierLabel,
+        baseRate: priceResult.baseRate,
+        nicheMultiplier: priceResult.nicheMultiplier,
+        nicheLabel: priceResult.nicheLabel,
+        engagementSignal: priceResult.engagementSignal,
+        engagementMultiplier: priceResult.engagementMultiplier,
+        geoMultiplier: priceResult.geoMultiplier,
+        geoLabel: priceResult.geoLabel,
+        formatMultiplier: priceResult.formatMultiplier,
+        formatLabel: priceResult.formatLabel,
+        starterFee: priceResult.starterFee,
+        standardFee: priceResult.standardFee,
+        premiumFee: priceResult.premiumFee,
+        floorPrice: priceResult.floorPrice,
+        exclusivityFee: priceResult.exclusivityFee,
+        usageRightsFee: priceResult.usageRightsFee,
+        monthlyRetainerEstimate: priceResult.monthlyRetainerEstimate,
+        engagementCaption: priceResult.engagementCaption,
         evaluatedAt: new Date().toISOString(),
       };
 
@@ -80,3 +100,4 @@ const valuationRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => 
 };
 
 export default valuationRoutes;
+

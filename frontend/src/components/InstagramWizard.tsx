@@ -249,26 +249,23 @@ export default function InstagramWizard({ loading, onEvaluate, initialValues }: 
           <React.Fragment key={num}>
             <div className="flex flex-col items-center">
               <div
-                className={`relative flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-full border-2 font-bold text-xs transition-all duration-500 ${
-                  step === num
+                className={`relative flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-full border-2 font-bold text-xs transition-all duration-500 ${step === num
                     ? 'border-purple-500 bg-purple-500/10 text-purple-400 shadow-[0_0_12px_-3px_rgba(168,85,247,0.5)]'
                     : step > num
                       ? 'border-purple-600 bg-purple-600 text-white'
                       : 'border-slate-800 bg-slate-950 text-slate-600'
-                }`}
+                  }`}
               >
                 {step > num ? <Check className="h-3.5 w-3.5" /> : num}
               </div>
-              <span className={`mt-1.5 text-[9px] md:text-[10px] font-semibold tracking-wide uppercase transition-colors duration-300 text-center leading-tight max-w-[52px] ${
-                step === num ? 'text-purple-400' : 'text-slate-600'
-              }`}>
+              <span className={`mt-1.5 text-[9px] md:text-[10px] font-semibold tracking-wide uppercase transition-colors duration-300 text-center leading-tight max-w-[52px] ${step === num ? 'text-purple-400' : 'text-slate-600'
+                }`}>
                 {STEP_LABELS[num - 1]}
               </span>
             </div>
             {num < TOTAL_STEPS && (
-              <div className={`h-[2px] flex-1 mx-0.5 rounded transition-all duration-500 ${
-                step > num ? 'bg-purple-600' : 'bg-slate-800'
-              }`} />
+              <div className={`h-[2px] flex-1 mx-0.5 rounded transition-all duration-500 ${step > num ? 'bg-purple-600' : 'bg-slate-800'
+                }`} />
             )}
           </React.Fragment>
         ))}
@@ -502,11 +499,10 @@ export default function InstagramWizard({ loading, onEvaluate, initialValues }: 
 
               {/* Auto-derived Geo Tier badge */}
               <div className="flex items-center gap-2 bg-slate-950/40 border border-slate-800 rounded-xl p-3">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                  geoTier === 'Tier 1' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25'
-                  : geoTier === 'Tier 2' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/25'
-                  : 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/25'
-                }`}>
+                <span className={`px-3 py-1 rounded-full text-xs font-bold ${geoTier === 'Tier 1' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25'
+                    : geoTier === 'Tier 2' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/25'
+                      : 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/25'
+                  }`}>
                   Audience {geoTier}
                 </span>
                 <span className="text-xs text-slate-500">— affects your CPM calculation</span>
@@ -588,11 +584,10 @@ export default function InstagramWizard({ loading, onEvaluate, initialValues }: 
                     { value: 'Stories Only (3-frame series)', label: 'Stories Only (3-frame series)' },
                     { value: 'Full Package (1 Reel + 3 Stories)', label: 'Full Package (1 Reel + 3 Stories)', popular: true },
                   ].map((opt) => (
-                    <label key={opt.value} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                      integrationFormat === opt.value
+                    <label key={opt.value} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${integrationFormat === opt.value
                         ? 'border-purple-500/50 bg-purple-500/10 text-white'
                         : 'border-slate-800 bg-slate-950/30 text-slate-400 hover:border-slate-700'
-                    }`}>
+                      }`}>
                       <input
                         type="radio"
                         name="integration-format"

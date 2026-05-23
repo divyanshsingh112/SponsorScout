@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { getCachedChannel } from '../services/redis.service';
 import { generateMediaKit } from '../services/pdf.service';
-import { cpmCalculator } from '../utils/cpm';
+import { calculateYouTubePrice, getYouTubeBenchmarkRange } from '../utils/pricing-engine';
 
 /**
  * YouTube-specific download route.
@@ -34,29 +34,19 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       const rawSubscribers = cachedData.subscribers ?? cachedData.channelStatistics?.subscriberCount ?? 'N/A';
       const rawAvgViews = cachedData.avgViews ?? cachedData.averageViews ?? 0;
       const rawEngagement = cachedData.engagement ?? cachedData.engagementRate ?? 0;
-      const rawCalculatedCpm = cachedData.calculatedCpm ?? cachedData.cpm ?? 100;
-      const rawFinalValuation = cachedData.finalValuation ?? cachedData.calculated_sponsor_fee_inr ?? 0;
 
-      // Derive multipliers and base cpm if they are missing (e.g. if the cache expired and we restored from limited payload)
-      let baseNicheCpm = cachedData.baseNicheCpm;
-      let geoMultiplier = cachedData.geoMultiplier ?? 1.0;
-      let integrationMultiplier = cachedData.integrationMultiplier ?? 1.0;
+      const subscribers = Number(rawSubscribers);
+      const avgViews = Number(rawAvgViews);
 
-      if (!baseNicheCpm || !geoMultiplier || !integrationMultiplier) {
-        const derivedNiche = cachedData.niche || 'Tech';
-        const derivedGeo = cachedData.targetRegion ?? cachedData.audienceGeo ?? 'Tier 3 India/Asia';
-        const derivedIntegration = cachedData.integrationFormat ?? cachedData.integrationType ?? '60-sec shoutout';
-        try {
-          const calc = cpmCalculator(derivedNiche, derivedGeo, derivedIntegration);
-          baseNicheCpm = calc.baseNicheCpm;
-          geoMultiplier = calc.geoMultiplier;
-          integrationMultiplier = calc.integrationMultiplier;
-        } catch (e) {
-          baseNicheCpm = 100;
-          geoMultiplier = 1.0;
-          integrationMultiplier = 1.0;
-        }
-      }
+      // Dynamically calculate using new tiered pricing engine
+      const priceResult = calculateYouTubePrice({
+        platform: 'youtube',
+        audienceSize: subscribers,
+        niche: cachedData.niche || 'Tech & Gadgets',
+        audienceGeo: cachedData.audienceGeo || cachedData.targetRegion || 'India',
+        integrationType: cachedData.integrationFormat ?? cachedData.integrationType ?? '60-second integration',
+        averageViews: avgViews
+      });
 
       const formatNumber = (val: any) => {
         if (val === undefined || val === null || val === '') return '0';
@@ -65,64 +55,42 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         return String(val);
       };
 
-      // YouTube Metric Overrides
-      const subscribersNum = Number(rawSubscribers);
-      const avgViewsNum = Number(rawAvgViews);
-      const viewRateVal = (!isNaN(subscribersNum) && subscribersNum > 0) ? (avgViewsNum / subscribersNum) * 100 : 0;
-      const cappedViewRate = Math.min(viewRateVal, 15).toFixed(2);
+      // Raw View Rate (uncapped)
+      const viewRateVal = (!isNaN(subscribers) && subscribers > 0) ? (avgViews / subscribers) * 100 : 0;
+      const rawViewRate = viewRateVal.toFixed(2);
       const engagementLabel = "Avg. View Rate";
 
-      // Industry Benchmarks (YouTube)
-      const benchmarkRanges: Record<string, { low: number; high: number }> = {
-        gaming:      { low: 20000,  high: 80000  },
-        tech:        { low: 30000,  high: 120000 },
-        finance:     { low: 40000,  high: 150000 },
-        lifestyle:   { low: 8000,   high: 40000  },
-        fitness:     { low: 10000,  high: 50000  },
-        education:   { low: 15000,  high: 60000  },
-        food:        { low: 8000,   high: 35000  },
-      };
-
-      const nicheLower = (cachedData.niche || 'Tech').toLowerCase();
-      let benchmarkNicheKey = 'tech';
-      if (nicheLower.includes('gaming')) benchmarkNicheKey = 'gaming';
-      else if (nicheLower.includes('tech')) benchmarkNicheKey = 'tech';
-      else if (nicheLower.includes('finance') || nicheLower.includes('crypto')) benchmarkNicheKey = 'finance';
-      else if (nicheLower.includes('lifestyle') || nicheLower.includes('vlog')) benchmarkNicheKey = 'lifestyle';
-      else if (nicheLower.includes('fitness')) benchmarkNicheKey = 'fitness';
-      else if (nicheLower.includes('education')) benchmarkNicheKey = 'education';
-      else if (nicheLower.includes('food')) benchmarkNicheKey = 'food';
-
-      const range = benchmarkRanges[benchmarkNicheKey] || { low: 10000, high: 60000 };
-      const finalFee = rawFinalValuation;
+      // Tier-specific benchmarks
+      const benchmarkRange = getYouTubeBenchmarkRange(subscribers, cachedData.niche || 'Tech & Gadgets');
+      const finalFee = priceResult.finalFee;
 
       const barPosition = Math.min(95, Math.max(5,
-        ((finalFee - range.low) / (range.high - range.low)) * 100
+        ((finalFee - benchmarkRange.low) / (benchmarkRange.high - benchmarkRange.low)) * 100
       )).toFixed(0);
 
-      const benchmarkLow = range.low.toLocaleString('en-IN');
-      const benchmarkHigh = range.high.toLocaleString('en-IN');
+      const benchmarkLow = benchmarkRange.low.toLocaleString('en-IN');
+      const benchmarkHigh = benchmarkRange.high.toLocaleString('en-IN');
       const benchmarkPosition = barPosition;
       const formattedFee = finalFee.toLocaleString('en-IN');
 
-      // 3-Tier Packages
-      const baseFee = finalFee;
-      const tierStarter = Math.round(baseFee * 0.65).toLocaleString('en-IN');
-      const tierStandard = baseFee.toLocaleString('en-IN');
-      const tierPremium = Math.round(baseFee * 1.65).toLocaleString('en-IN');
+      // Tiers package deliverables and prices
+      const tierStarter = priceResult.starterFee.toLocaleString('en-IN');
+      const tierStandard = priceResult.standardFee.toLocaleString('en-IN');
+      const tierPremium = priceResult.premiumFee.toLocaleString('en-IN');
 
-      const deliverableStarter = "30-sec brand mention";
-      const deliverableStandard = "60-sec dedicated shoutout";
+      const deliverableStarter = "30-second brand shoutout";
+      const deliverableStandard = "60-second dedicated integration (Recommended)";
       const deliverablePremium = "Dedicated video + Community post";
 
-      // NEW FEATURE 05: Monthly Retainer Estimate
-      const monthlyRetainerEstimate = Math.round(baseFee * 4).toLocaleString('en-IN');
+      // Retainer calculation
+      const monthlyRetainerEstimate = priceResult.monthlyRetainerEstimate.toLocaleString('en-IN');
+      const retainerDeliverableLabel = "Monthly Retainer Estimate (4 videos/month)";
 
-      // Negotiation Brief
-      const floorPrice = Math.round(baseFee * 0.70).toLocaleString('en-IN');
-      const recommendedFee = baseFee.toLocaleString('en-IN');
-      const exclusivityFee = Math.round(baseFee * 1.25).toLocaleString('en-IN');
-      const usageRightsFee = Math.round(baseFee * 0.20).toLocaleString('en-IN');
+      // Negotiation values
+      const floorPrice = priceResult.floorPrice.toLocaleString('en-IN');
+      const recommendedFee = priceResult.standardFee.toLocaleString('en-IN');
+      const exclusivityFee = priceResult.exclusivityFee.toLocaleString('en-IN');
+      const usageRightsFee = priceResult.usageRightsFee.toLocaleString('en-IN');
 
       // Outreach Email Template
       const creatorFirstName = (cachedData.channelName || 'Creator').split(' ')[0];
@@ -132,13 +100,19 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       const mostRecentVideo = mostRecentVideoObj
         ? (typeof mostRecentVideoObj === 'string' ? mostRecentVideoObj : (mostRecentVideoObj.title || "my latest content"))
         : "my latest content";
-      const aiParagraph = cachedData.alignmentText || `${cachedData.channelName || 'Unknown Channel'}'s authority in the ${cachedData.niche || 'Tech'} space is heavily reinforced by recent high-performing videos.`;
+      const aiParagraph = cachedData.alignmentText || `${cachedData.channelName || 'Unknown Channel'}'s authority in the ${cachedData.niche || 'Tech & Gadgets'} space is heavily reinforced by recent high-performing videos.`;
 
-      // NEW FEATURE 02: Data Freshness
+      // Data Freshness
       const now = new Date();
       const currentDate = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
       const expiryDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
         .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+      // Pricing methodology note
+      const pricingMethodologyNote = "This valuation is calculated using SponsorScout's tiered rate engine, not AdSense CPM data. It reflects actual brand-to-creator transaction benchmarks from the Indian influencer market in 2026, adjusted for niche commercial value, audience engagement depth, and geographic reach. All figures represent fair market value for a direct brand deal — they do not account for platform agency fees or exclusivity premiums.";
+
+      // Benchmark bar note
+      const benchmarkNote = `Industry range for ${priceResult.tierLabel.split(' ')[0]} YouTube creators in ${priceResult.nicheLabel} niche, Indian market, 2026.`;
 
       const templateData = {
         channelName: cachedData.channelName || 'Unknown Channel',
@@ -146,19 +120,19 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         avgViews: formatNumber(rawAvgViews),
         engagement: typeof rawEngagement === 'number' ? parseFloat(rawEngagement.toFixed(2)) : rawEngagement,
         targetSponsor: cachedData.targetSponsor ?? cachedData.brandName ?? 'Sponsor Brand',
-        targetRegion: cachedData.targetRegion ?? cachedData.audienceGeo ?? 'Tier 3 India/Asia',
-        integrationFormat: cachedData.integrationFormat ?? cachedData.integrationType ?? '60-sec shoutout',
-        calculatedCpm: formatNumber(rawCalculatedCpm),
-        finalValuation: formatNumber(rawFinalValuation),
+        targetRegion: priceResult.geoLabel,
+        integrationFormat: priceResult.formatLabel,
+        calculatedCpm: formatNumber(100), // kept for backwards compat placeholder
+        finalValuation: formatNumber(finalFee),
         alignmentText: cachedData.alignmentText || aiParagraph,
         subscriberCount: formatNumber(rawSubscribers),
         averageViews: formatNumber(rawAvgViews),
         engagementRate: typeof rawEngagement === 'number' ? parseFloat(rawEngagement.toFixed(2)) : rawEngagement,
-        suggestedFee: formatNumber(rawFinalValuation),
+        suggestedFee: formatNumber(finalFee),
         brandName: cachedData.targetSponsor ?? cachedData.brandName ?? 'Sponsor Brand',
-        audienceGeo: cachedData.targetRegion ?? cachedData.audienceGeo ?? 'Tier 3 India/Asia',
-        integrationType: cachedData.integrationFormat ?? cachedData.integrationType ?? '60-sec shoutout',
-        cpm: formatNumber(rawCalculatedCpm),
+        audienceGeo: priceResult.geoLabel,
+        integrationType: priceResult.formatLabel,
+        cpm: formatNumber(100),
         channelAvatarUrl: cachedData.channelAvatarUrl,
         recentVideos: (cachedData.recentVideos || []).map((video: any) => ({
           title: video.title,
@@ -166,11 +140,11 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         })),
         currentDate,
         expiryDate,
-        niche: cachedData.niche || 'Tech',
-        baseNicheCpm: formatNumber(baseNicheCpm),
-        geoMultiplier,
-        integrationMultiplier,
-        viewRate: cappedViewRate,
+        niche: priceResult.nicheLabel,
+        baseNicheCpm: formatNumber(priceResult.baseRate),
+        geoMultiplier: priceResult.geoMultiplier,
+        integrationMultiplier: priceResult.formatMultiplier,
+        viewRate: rawViewRate,
         engagementLabel,
         benchmarkLow,
         benchmarkHigh,
@@ -183,6 +157,7 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         deliverableStandard,
         deliverablePremium,
         monthlyRetainerEstimate,
+        retainerDeliverableLabel,
         floorPrice,
         recommendedFee,
         exclusivityFee,
@@ -190,7 +165,20 @@ const downloadRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
         creatorFirstName,
         creatorName: cachedData.channelName || 'Unknown Creator',
         mostRecentVideo,
-        aiParagraph
+        aiParagraph,
+
+        // Tier fields
+        tierLabel: priceResult.tierLabel,
+        nicheLabel: priceResult.nicheLabel,
+        nicheMultiplier: priceResult.nicheMultiplier,
+        engagementSignal: priceResult.engagementSignal,
+        engagementMultiplier: priceResult.engagementMultiplier,
+        geoLabel: priceResult.geoLabel,
+        formatLabel: priceResult.formatLabel,
+        formatMultiplier: priceResult.formatMultiplier,
+        pricingMethodologyNote,
+        benchmarkNote,
+        engagementCaption: priceResult.engagementCaption
       };
 
       const pdfBuffer = await generateMediaKit(templateData, 'youtube');

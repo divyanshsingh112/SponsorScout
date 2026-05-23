@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { getCachedChannel } from '../services/redis.service';
 import { generateMediaKit } from '../services/pdf.service';
+import { calculateInstagramPrice, getInstagramBenchmarkRange } from '../utils/pricing-engine';
 
 /**
  * Instagram-specific download route.
@@ -35,11 +36,6 @@ const instagramDownloadRoutes: FastifyPluginAsync = async (fastify: FastifyInsta
       const totalFollowing = cachedData.totalFollowing ?? 0;
       const avgReelPlays = cachedData.avgReelPlays ?? 0;
       const avgStoryViews = cachedData.avgStoryViews ?? 0;
-      const reelValuation = cachedData.reelValuation ?? 0;
-      const storyValuation = cachedData.storyValuation ?? 0;
-      const rawFinalValuation = cachedData.finalValuation ?? cachedData.calculated_sponsor_fee_inr ?? 0;
-      const geoMultiplier = cachedData.geoMultiplier ?? 1.0;
-      const resonanceMultiplier = cachedData.resonanceMultiplier ?? 1.0;
 
       // Optional engagement metrics
       const avgReelLikes = cachedData.avgReelLikes ?? 0;
@@ -146,60 +142,63 @@ const instagramDownloadRoutes: FastifyPluginAsync = async (fastify: FastifyInsta
 
       const authenticity = calculateAuthenticityScore();
 
-      // ── BUG 05 FIX: Instagram-specific benchmark ranges ──
-      const instagramBenchmarkRanges: Record<string, { low: number; high: number }> = {
-        gaming:     { low: 3000,  high: 20000 },
-        tech:       { low: 5000,  high: 25000 },
-        finance:    { low: 8000,  high: 35000 },
-        lifestyle:  { low: 2500,  high: 15000 },
-        fitness:    { low: 3000,  high: 18000 },
-        education:  { low: 3000,  high: 20000 },
-        food:       { low: 2000,  high: 12000 },
-        fashion:    { low: 3000,  high: 18000 },
-        beauty:     { low: 3000,  high: 18000 },
-        travel:     { low: 2500,  high: 15000 },
-        comedy:     { low: 2000,  high: 15000 },
-      };
+      // Dynamically calculate using new tiered pricing engine
+      const priceResult = calculateInstagramPrice({
+        platform: 'instagram',
+        audienceSize: followersNum,
+        niche: niche,
+        audienceGeo: cachedData.topLocation ?? cachedData.audienceGeo ?? 'Tier 3',
+        integrationType: cachedData.integrationFormat ?? cachedData.integrationType ?? '1 Reel + 3 Stories (Full Package)',
+        averageViews: avgReelsPlaysNum,
+        instagramLikes: Number(avgReelLikes),
+        instagramComments: Number(avgReelComments),
+        instagramShares: Number(avgReelShares),
+        instagramSaves: Number(avgReelSaves)
+      });
 
-      const nicheLower = niche.toLowerCase();
-      let benchmarkNicheKey = 'tech';
-      if (nicheLower.includes('gaming')) benchmarkNicheKey = 'gaming';
-      else if (nicheLower.includes('tech')) benchmarkNicheKey = 'tech';
-      else if (nicheLower.includes('finance') || nicheLower.includes('invest')) benchmarkNicheKey = 'finance';
-      else if (nicheLower.includes('lifestyle') || nicheLower.includes('vlog')) benchmarkNicheKey = 'lifestyle';
-      else if (nicheLower.includes('fitness') || nicheLower.includes('health')) benchmarkNicheKey = 'fitness';
-      else if (nicheLower.includes('education') || nicheLower.includes('study')) benchmarkNicheKey = 'education';
-      else if (nicheLower.includes('food') || nicheLower.includes('cook')) benchmarkNicheKey = 'food';
-      else if (nicheLower.includes('fashion')) benchmarkNicheKey = 'fashion';
-      else if (nicheLower.includes('beauty')) benchmarkNicheKey = 'beauty';
-      else if (nicheLower.includes('travel')) benchmarkNicheKey = 'travel';
-      else if (nicheLower.includes('comedy') || nicheLower.includes('entertain')) benchmarkNicheKey = 'comedy';
+      const finalFee = priceResult.finalFee;
 
-      const range = instagramBenchmarkRanges[benchmarkNicheKey] || { low: 2000, high: 15000 };
-      const finalFee = rawFinalValuation;
+      // Tier-specific benchmarks
+      const benchmarkRange = getInstagramBenchmarkRange(followersNum, niche);
 
       const barPosition = Math.min(95, Math.max(5,
-        ((finalFee - range.low) / (range.high - range.low)) * 100
+        ((finalFee - benchmarkRange.low) / (benchmarkRange.high - benchmarkRange.low)) * 100
       )).toFixed(0);
 
       // ── 3-Tier Packages ──
-      const baseFee = finalFee;
-      const tierStarter = Math.round(baseFee * 0.65).toLocaleString('en-IN');
-      const tierStandard = baseFee.toLocaleString('en-IN');
-      const tierPremium = Math.round(baseFee * 1.65).toLocaleString('en-IN');
+      const tierStarter = priceResult.starterFee.toLocaleString('en-IN');
+      const tierStandard = priceResult.standardFee.toLocaleString('en-IN');
+      const tierPremium = priceResult.premiumFee.toLocaleString('en-IN');
 
       const deliverableStarter = '3x Instagram Stories';
       const deliverableStandard = '1x Reel + 3x Stories';
       const deliverablePremium = '2x Reels + 5x Stories + Link in Bio (7 days)';
 
       // ── NEW FEATURE 05: Monthly Retainer Estimate ──
-      const monthlyRetainerEstimate = Math.round(baseFee * 4).toLocaleString('en-IN');
+      // Parse posting frequency to estimate posts/month
+      let postsPerMonth = 10;
+      const freqLower = postingFrequency.toLowerCase();
+      if (freqLower.includes('daily')) {
+        postsPerMonth = 30;
+      } else if (freqLower.includes('once a week') || freqLower.includes('1 per week')) {
+        postsPerMonth = 4;
+      } else if (freqLower.includes('2-3x per week') || freqLower.includes('2-3') || freqLower.includes('3x per week') || freqLower.includes('2 to 3')) {
+        postsPerMonth = 10;
+      } else if (freqLower.includes('4-5x per week') || freqLower.includes('4-5') || freqLower.includes('4 to 5')) {
+        postsPerMonth = 18;
+      } else if (freqLower.includes('month') || freqLower.includes('few')) {
+        postsPerMonth = 2;
+      }
+
+      const monthlyRetainerEstimateVal = finalFee * postsPerMonth;
+      const monthlyRetainerEstimate = monthlyRetainerEstimateVal.toLocaleString('en-IN');
+      const retainerDeliverableLabel = `Monthly Retainer Estimate (${postsPerMonth} posts/month)`;
 
       // ── Negotiation Brief ──
-      const floorPrice = Math.round(baseFee * 0.70).toLocaleString('en-IN');
-      const recommendedFee = baseFee.toLocaleString('en-IN');
-      const exclusivityFee = Math.round(baseFee * 1.25).toLocaleString('en-IN');
-      const usageRightsFee = Math.round(baseFee * 0.20).toLocaleString('en-IN');
+      const floorPrice = priceResult.floorPrice.toLocaleString('en-IN');
+      const recommendedFee = priceResult.standardFee.toLocaleString('en-IN');
+      const exclusivityFee = priceResult.exclusivityFee.toLocaleString('en-IN');
+      const usageRightsFee = priceResult.usageRightsFee.toLocaleString('en-IN');
 
       // ── BUG 06 FIX: Content pillars → recent content reference ──
       const contentPillarsRaw = cachedData.contentPillars || cachedData.recentContentFocus || '';
@@ -224,12 +223,18 @@ const instagramDownloadRoutes: FastifyPluginAsync = async (fastify: FastifyInsta
       const expiryDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
         .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
+      // Pricing methodology note
+      const pricingMethodologyNote = "This valuation is calculated using SponsorScout's tiered rate engine, not AdSense CPM data. It reflects actual brand-to-creator transaction benchmarks from the Indian influencer market in 2026, adjusted for niche commercial value, audience engagement depth, and geographic reach. All figures represent fair market value for a direct brand deal — they do not account for platform agency fees or exclusivity premiums.";
+
+      // Benchmark bar note
+      const benchmarkNote = `Industry range for ${priceResult.tierLabel.split(' ')[0]} Instagram creators in ${priceResult.nicheLabel} niche, Indian market, per Reel, 2026.`;
+
       const templateData = {
         channelName: displayName,
         instagramHandle,
         targetSponsor: cachedData.targetSponsor ?? cachedData.brandName ?? 'Sponsor Brand',
         brandName: cachedData.targetSponsor ?? cachedData.brandName ?? 'Sponsor Brand',
-        niche,
+        niche: priceResult.nicheLabel,
         totalFollowers: formatNumber(totalFollowers),
         avgReelPlays: formatNumber(avgReelPlays),
         avgStoryViews: formatNumber(avgStoryViews),
@@ -240,16 +245,16 @@ const instagramDownloadRoutes: FastifyPluginAsync = async (fastify: FastifyInsta
         topLocation: cachedData.topLocation ?? 'Tier 3',
         topAgeRange: cachedData.topAgeRange ?? 'N/A',
         genderSplit: cachedData.genderSplit ?? 'N/A',
-        targetRegion: cachedData.topLocation ?? cachedData.targetRegion ?? 'Tier 3',
-        integrationFormat: cachedData.integrationFormat ?? cachedData.integrationType ?? 'Reels & Stories',
-        geoMultiplier,
-        resonanceMultiplier,
-        reelValuation: formatNumber(reelValuation),
-        storyValuation: formatNumber(storyValuation),
-        finalValuation: formatNumber(rawFinalValuation),
+        targetRegion: priceResult.geoLabel,
+        integrationFormat: priceResult.formatLabel,
+        geoMultiplier: priceResult.geoMultiplier,
+        resonanceMultiplier: priceResult.nicheMultiplier,
+        reelValuation: formatNumber(finalFee),
+        storyValuation: formatNumber(0), // not used in new format table but kept for compatibility
+        finalValuation: formatNumber(finalFee),
         formattedFee: finalFee.toLocaleString('en-IN'),
-        benchmarkLow: range.low.toLocaleString('en-IN'),
-        benchmarkHigh: range.high.toLocaleString('en-IN'),
+        benchmarkLow: benchmarkRange.low.toLocaleString('en-IN'),
+        benchmarkHigh: benchmarkRange.high.toLocaleString('en-IN'),
         benchmarkPosition: barPosition,
         tierStarter,
         tierStandard,
@@ -258,6 +263,7 @@ const instagramDownloadRoutes: FastifyPluginAsync = async (fastify: FastifyInsta
         deliverableStandard,
         deliverablePremium,
         monthlyRetainerEstimate,
+        retainerDeliverableLabel,
         floorPrice,
         recommendedFee,
         exclusivityFee,
@@ -274,8 +280,20 @@ const instagramDownloadRoutes: FastifyPluginAsync = async (fastify: FastifyInsta
         authenticityContext: authenticity.context,
         currentDate,
         expiryDate,
-        audienceGeo: cachedData.topLocation ?? cachedData.audienceGeo ?? 'Tier 3',
+        audienceGeo: priceResult.geoLabel,
         averageViews: formatNumber(avgReelPlays),
+
+        // Tier fields
+        tierLabel: priceResult.tierLabel,
+        nicheLabel: priceResult.nicheLabel,
+        nicheMultiplier: priceResult.nicheMultiplier,
+        engagementSignal: priceResult.engagementSignal,
+        engagementMultiplier: priceResult.engagementMultiplier,
+        geoLabel: priceResult.geoLabel,
+        formatLabel: priceResult.formatLabel,
+        formatMultiplier: priceResult.formatMultiplier,
+        pricingMethodologyNote,
+        benchmarkNote
       };
 
       const pdfBuffer = await generateMediaKit(templateData, 'instagram');

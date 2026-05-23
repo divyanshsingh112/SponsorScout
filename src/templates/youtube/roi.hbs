@@ -14,30 +14,30 @@
         <table class="roi-table">
             <thead>
                 <tr>
-                    <th>Metric Dimension</th>
-                    <th>Calibrated Baseline Value</th>
+                    <th>Pricing Dimension</th>
+                    <th>Calibrated Value & Multipliers</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>Expected Reach (Average Views)</td>
-                    <td><strong>{{avgViews}} views</strong> per video</td>
+                    <td>Creator Performance Tier</td>
+                    <td><strong>{{tierLabel}}</strong> (Midpoint Base: ₹{{baseNicheCpm}})</td>
                 </tr>
                 <tr>
-                    <td>Dynamic Niche CPM (INR)</td>
-                    <td><strong>₹{{baseNicheCpm}}</strong> ({{niche}})</td>
+                    <td>Content Niche Weight</td>
+                    <td><strong>{{nicheLabel}} — {{nicheMultiplier}}x</strong></td>
                 </tr>
                 <tr>
-                    <td>Audience Location Multiplier</td>
-                    <td><strong>{{geoMultiplier}}x</strong> multiplier ({{targetRegion}})</td>
+                    <td>Engagement Signal Weight</td>
+                    <td><strong>{{viewRate}}% View Rate — {{engagementMultiplier}}x</strong></td>
                 </tr>
                 <tr>
-                    <td>Integration Format Multiplier</td>
-                    <td><strong>{{integrationMultiplier}}x</strong> multiplier ({{integrationFormat}})</td>
+                    <td>Audience Geo Reach Weight</td>
+                    <td><strong>{{geoLabel}} — {{geoMultiplier}}x</strong></td>
                 </tr>
                 <tr>
-                    <td>Effective Combined CPM</td>
-                    <td><strong>₹{{calculatedCpm}}</strong> per 1,000 views</td>
+                    <td>Integration Format Weight</td>
+                    <td><strong>{{integrationFormat}} — {{integrationMultiplier}}x</strong></td>
                 </tr>
                 <tr>
                     <td><strong>Final Calibrated Valuation</strong></td>
@@ -60,7 +60,7 @@
                 </div>
                 <span class="benchmark-high">₹{{benchmarkHigh}}</span>
             </div>
-            <p class="benchmark-note">Calculated using SponsorScout Dynamic Niche CPM Matrix — YouTube Benchmarks</p>
+            <p class="benchmark-note">{{benchmarkNote}}</p>
         </div>
 
         <!-- 3-TIER PACKAGE TABLE -->
@@ -92,17 +92,21 @@
                     </tr>
                     <tr>
                         <td><span class="tier-badge" style="background: #1a1a2e; color: #60a5fa;">Monthly</span></td>
-                        <td>Monthly Retainer Estimate (4 posts/month)</td>
+                        <td>{{retainerDeliverableLabel}}</td>
                         <td><span class="tier-price" style="color: #1a1a2e; font-weight: 800;">₹{{monthlyRetainerEstimate}} INR</span></td>
                     </tr>
                 </tbody>
             </table>
             <p class="tier-note">*Packages are customized based on current platform engagement and average reach projections.</p>
         </div>
+
+        <p class="pricing-transparency-note" style="font-size: 8px; color: #94a3b8; line-height: 1.4; margin-top: 15px; font-style: italic; border-top: 1px dashed #e2e8f0; padding-top: 10px; text-align: center;">
+            {{pricingMethodologyNote}}
+        </p>
         
-        <div class="formula-box">
+        <div class="formula-box" style="margin-top: 15px;">
             Placement Valuation Formula:<br>
-            Valuation = (Average Views * Effective CPM) / 1,000
+            Valuation = Base Tier Rate × Niche × Engagement × Geo × Format
         </div>
     </div>
     

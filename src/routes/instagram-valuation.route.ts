@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { getCachedChannel, cacheChannel } from '../services/redis.service';
-import { getResonanceMultiplier } from '../utils/cpm';
+import { calculateInstagramPrice } from '../utils/pricing-engine';
 
 /**
  * Instagram-specific valuation route.
@@ -93,22 +93,21 @@ const instagramValuationRoutes: FastifyPluginAsync = async (fastify: FastifyInst
         return reply.send(cachedData);
       }
 
-      // Calculate geo multiplier from country/tier
-      let geoMultiplier = 1.0;
       const derivedTier = geoTier || deriveGeoTier(topCountry);
-      if (derivedTier.includes('1')) geoMultiplier = 3.0;
-      else if (derivedTier.includes('2')) geoMultiplier = 1.8;
-      else geoMultiplier = 1.0;
 
-      // Calculate Resonance Multiplier
-      const resonanceMultiplier = getResonanceMultiplier(niche, sponsorNiche);
-
-      // Instagram valuations
-      const reelValuation = Math.round((avgReelPlays * 100 * geoMultiplier * resonanceMultiplier) / 1000);
-      const storyValuation = avgStoryViews > 0
-        ? Math.round((avgStoryViews * 200 * geoMultiplier * resonanceMultiplier) / 1000)
-        : 0;
-      const calculated_sponsor_fee_inr = reelValuation + storyValuation;
+      // New pricing engine calculation
+      const priceResult = calculateInstagramPrice({
+        platform: 'instagram',
+        audienceSize: totalFollowers,
+        niche,
+        audienceGeo: derivedTier,
+        integrationType,
+        averageViews: avgReelPlays,
+        instagramLikes: avgReelLikes,
+        instagramComments: avgReelComments,
+        instagramShares: avgReelShares,
+        instagramSaves: avgReelSaves
+      });
 
       // Process content pillars
       let pillarsArray: string[] = [];
@@ -128,7 +127,7 @@ const instagramValuationRoutes: FastifyPluginAsync = async (fastify: FastifyInst
         displayName,
         instagramHandle: channelId.replace(/^@/, ''),
         averageViews: avgReelPlays,
-        engagementRate: totalFollowers > 0 ? parseFloat(((avgReelPlays / totalFollowers) * 100).toFixed(2)) : 0,
+        engagementRate: priceResult.engagementSignal,
         channelStatistics: { subscriberCount: String(totalFollowers) },
         niche,
         brandName,
@@ -158,11 +157,32 @@ const instagramValuationRoutes: FastifyPluginAsync = async (fastify: FastifyInst
         brandIndustry,
         sponsorNiche,
         profileVisits,
-        resonanceMultiplier,
-        geoMultiplier,
-        reelValuation,
-        storyValuation,
-        calculated_sponsor_fee_inr,
+        
+        tierLabel: priceResult.tierLabel,
+        baseRate: priceResult.baseRate,
+        nicheMultiplier: priceResult.nicheMultiplier,
+        nicheLabel: priceResult.nicheLabel,
+        engagementSignal: priceResult.engagementSignal,
+        engagementMultiplier: priceResult.engagementMultiplier,
+        geoMultiplier: priceResult.geoMultiplier,
+        geoLabel: priceResult.geoLabel,
+        formatMultiplier: priceResult.formatMultiplier,
+        formatLabel: priceResult.formatLabel,
+        starterFee: priceResult.starterFee,
+        standardFee: priceResult.standardFee,
+        premiumFee: priceResult.premiumFee,
+        floorPrice: priceResult.floorPrice,
+        exclusivityFee: priceResult.exclusivityFee,
+        usageRightsFee: priceResult.usageRightsFee,
+        monthlyRetainerEstimate: priceResult.monthlyRetainerEstimate,
+
+        // For backward compatibility
+        resonanceMultiplier: priceResult.nicheMultiplier,
+        reelValuation: priceResult.finalFee,
+        storyValuation: avgStoryViews > 0
+          ? Math.round((avgStoryViews * 200 * priceResult.geoMultiplier * priceResult.nicheMultiplier) / 1000)
+          : 0,
+        calculated_sponsor_fee_inr: priceResult.finalFee,
         targetSponsor: brandName,
         audienceGeo: derivedTier,
         integrationFormat: integrationType,
@@ -197,3 +217,4 @@ function deriveGeoTier(country: string): string {
 }
 
 export default instagramValuationRoutes;
+
