@@ -59,12 +59,12 @@ const getInitialWizardValues = () => {
 
 const HeroSection = React.memo(({ onCtaClick }: { onCtaClick: () => void }) => {
   return (
-    <section className="relative pt-20 pb-16 md:pt-32 md:pb-24 px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
+    <section className="relative pt-20 pb-12 sm:pb-16 md:pt-32 md:pb-24 px-5 sm:px-6 lg:px-8 text-center flex flex-col items-center">
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl pointer-events-none max-w-[80vw]" />
       
-      <div className="max-w-4xl mx-auto relative z-10 flex flex-col items-center">
+      <div className="max-w-4xl mx-auto relative z-10 flex flex-col items-center w-full">
 
-        <h1 className="text-4xl sm:text-6xl md:text-8xl font-extrabold tracking-tight leading-[1.1] mb-6">
+        <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.1] mb-5 sm:mb-6">
           <span className="block bg-gradient-to-r from-white via-slate-100 to-slate-400 text-transparent bg-clip-text">
             Stop Getting Lowballed
           </span>
@@ -73,13 +73,13 @@ const HeroSection = React.memo(({ onCtaClick }: { onCtaClick: () => void }) => {
           </span>
         </h1>
 
-        <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+        <p className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-400 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2">
           Generate an agency-grade sponsorship pitch deck in 60 seconds using real-time market data and AI.
         </p>
 
         <button
           onClick={onCtaClick}
-          className="group px-8 py-4 sm:py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:via-purple-500 hover:to-pink-500 text-white rounded-2xl font-extrabold text-base sm:text-lg tracking-wide shadow-2xl shadow-indigo-500/30 hover:shadow-indigo-500/40 transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center space-x-3 cursor-pointer"
+          className="group w-full sm:w-auto px-6 sm:px-8 py-4 sm:py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:via-purple-500 hover:to-pink-500 text-white rounded-2xl font-extrabold text-sm sm:text-base md:text-lg tracking-wide shadow-2xl shadow-indigo-500/30 hover:shadow-indigo-500/40 transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center space-x-3 cursor-pointer"
         >
           <span>Calculate Your Worth (Beta)</span>
           <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -510,10 +510,10 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0F172A] text-slate-100 font-sans selection:bg-indigo-500/30 flex flex-col relative overflow-x-hidden">
-      {/* Background glow */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2" />
-      <div className="absolute top-[20%] right-1/4 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-[#0F172A] text-slate-100 font-sans selection:bg-indigo-500/30 flex flex-col relative overflow-x-hidden overflow-y-auto">
+      {/* Background glow — clamped to viewport to prevent horizontal scroll */}
+      <div className="absolute top-0 left-1/4 w-[min(500px,80vw)] h-[min(500px,80vw)] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2" />
+      <div className="absolute top-[20%] right-1/4 w-[min(600px,90vw)] h-[min(600px,90vw)] bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
       
       {/* Header */}
       <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-[#0F172A]/75 border-b border-slate-800/80 transition-all duration-300">
@@ -623,30 +623,30 @@ function App() {
       </div>
 
       {/* Calculator */}
-      <section id="calculator" className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full relative">
-        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+      <section id="calculator" className="py-16 sm:py-20 md:py-28 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full relative">
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-[min(400px,80vw)] h-[min(400px,80vw)] bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 rounded-full blur-3xl pointer-events-none" />
         
-        <div className="text-center mb-12 relative z-10">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-3 uppercase tracking-wider">
+        <div className="text-center mb-8 sm:mb-12 relative z-10">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-3 uppercase tracking-wider">
             Pricing Calibration Engine
           </span>
-          <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight text-white px-2">
             Calculate Your Sponsorship Valuation
           </h2>
-          <p className="text-slate-400 text-sm sm:text-base mt-4 max-w-xl mx-auto leading-relaxed">
+          <p className="text-slate-400 text-xs sm:text-sm md:text-base mt-3 sm:mt-4 max-w-xl mx-auto leading-relaxed px-2">
             Fill in your channel details or manual stats to unlock your professional valuation and custom-contextualized PDF pitch deck.
           </p>
         </div>
 
         {/* Wizard wrapper */}
-        <div className="relative rounded-3xl border border-slate-800/80 bg-slate-900/25 p-1 backdrop-blur-2xl shadow-3xl hover:border-slate-700/60 transition-all duration-300 max-w-4xl mx-auto">
+        <div className="relative rounded-2xl sm:rounded-3xl border border-slate-800/80 bg-slate-900/25 p-1 backdrop-blur-2xl shadow-3xl hover:border-slate-700/60 transition-all duration-300 max-w-4xl mx-auto">
           {/* Top border glow */}
-          <div className="absolute inset-x-12 -top-px h-px bg-gradient-to-r from-transparent via-indigo-500 to-purple-500 pointer-events-none" />
+          <div className="absolute inset-x-4 sm:inset-x-12 -top-px h-px bg-gradient-to-r from-transparent via-indigo-500 to-purple-500 pointer-events-none" />
           
-          <div className="p-4 sm:p-8">
+          <div className="p-3 sm:p-6 md:p-8">
             {/* Platform Selector Toggle */}
-            <div className="flex justify-center mb-8">
-              <div className="bg-slate-950/80 p-1.5 rounded-2xl border border-slate-800/80 inline-flex items-center gap-1.5 shadow-inner">
+            <div className="flex justify-center mb-6 sm:mb-8">
+              <div className="bg-slate-950/80 p-1 sm:p-1.5 rounded-2xl border border-slate-800/80 inline-flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 shadow-inner w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => {
@@ -654,14 +654,15 @@ function App() {
                     setChannelData(null);
                     setError('');
                   }}
-                  className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                  className={`flex-1 sm:flex-initial px-3 sm:px-6 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer min-w-0 ${
                     wizardValues.platform !== 'instagram'
                       ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/25'
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  <Video className="h-4 w-4" />
-                  <span>YouTube Channel</span>
+                  <Video className="h-4 w-4 shrink-0" />
+                  <span className="truncate">YouTube</span>
+                  <span className="hidden sm:inline">Channel</span>
                 </button>
                 <button
                   type="button"
@@ -670,14 +671,15 @@ function App() {
                     setChannelData(null);
                     setError('');
                   }}
-                  className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                  className={`flex-1 sm:flex-initial px-3 sm:px-6 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer min-w-0 ${
                     wizardValues.platform === 'instagram'
                       ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25'
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  <Sparkles className="h-4 w-4" />
-                  <span>Instagram Creator</span>
+                  <Sparkles className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Instagram</span>
+                  <span className="hidden sm:inline">Creator</span>
                 </button>
               </div>
             </div>
@@ -769,45 +771,45 @@ function App() {
 
             {/* Results */}
             {channelData && (
-              <div className="w-full max-w-3xl mx-auto mt-12 pb-4 animate-in fade-in slide-in-from-bottom-5 duration-500">
-                <div className="bg-slate-950/70 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl relative">
+              <div className="w-full max-w-3xl mx-auto mt-8 sm:mt-12 pb-4 animate-in fade-in slide-in-from-bottom-5 duration-500">
+                <div className="bg-slate-950/70 border border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl relative">
                   
                   {/* Creator info */}
-                  <div className="flex flex-col md:flex-row items-center md:items-start gap-5 mb-8 border-b border-slate-900 pb-6">
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5 mb-6 sm:mb-8 border-b border-slate-900 pb-5 sm:pb-6">
                     {channelData.channelAvatarUrl && (
                       <img 
                         src={channelData.channelAvatarUrl} 
                         alt={channelData.channelName} 
-                        className="h-16 w-16 rounded-2xl border-2 border-indigo-500/25 bg-slate-900 object-cover shadow-md"
+                        className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl border-2 border-indigo-500/25 bg-slate-900 object-cover shadow-md shrink-0"
                       />
                     )}
-                    <div className="text-center md:text-left flex-1">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-2">
+                    <div className="text-center sm:text-left flex-1 min-w-0 w-full">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-2">
                         <Sparkles className="h-3 w-3" />
                         {channelData.niche || wizardValues.niche}
                       </span>
-                      <h2 className="text-xl md:text-2xl font-black text-slate-100">{channelData.channelName}</h2>
+                      <h2 className="text-lg sm:text-xl md:text-2xl font-black text-slate-100 truncate">{channelData.channelName}</h2>
                       
-                      {/* Channel stats badges */}
-                      <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-3 text-xs text-slate-400 font-medium">
-                        <div className="flex items-center space-x-1.5 bg-slate-900/40 px-3 py-1.5 rounded-xl border border-slate-800/40">
-                          <span className="text-slate-500">{wizardValues.platform === 'instagram' ? 'Followers:' : 'Subscribers:'}</span>
-                          <span className="text-indigo-400 font-bold">
+                      {/* Channel stats badges — stack on mobile, row on sm+ */}
+                      <div className="flex flex-col sm:flex-row flex-wrap justify-center sm:justify-start gap-2 sm:gap-3 mt-3 text-xs text-slate-400 font-medium">
+                        <div className="flex items-center justify-center sm:justify-start space-x-1.5 bg-slate-900/40 px-3 py-1.5 rounded-xl border border-slate-800/40 min-w-0">
+                          <span className="text-slate-500 shrink-0">{wizardValues.platform === 'instagram' ? 'Followers:' : 'Subs:'}</span>
+                          <span className="text-indigo-400 font-bold truncate">
                             {wizardValues.platform === 'instagram'
                               ? Number(channelData.totalFollowers || wizardValues.totalFollowers).toLocaleString()
                               : Number(channelData.channelStatistics?.subscriberCount || channelData.subscribers).toLocaleString()}
                           </span>
                         </div>
-                        <div className="flex items-center space-x-1.5 bg-slate-900/40 px-3 py-1.5 rounded-xl border border-slate-800/40">
-                          <span className="text-slate-500">{wizardValues.platform === 'instagram' ? 'Avg. Reels Plays:' : 'Avg. Views:'}</span>
-                          <span className="text-purple-400 font-bold">
+                        <div className="flex items-center justify-center sm:justify-start space-x-1.5 bg-slate-900/40 px-3 py-1.5 rounded-xl border border-slate-800/40 min-w-0">
+                          <span className="text-slate-500 shrink-0">{wizardValues.platform === 'instagram' ? 'Avg. Plays:' : 'Avg. Views:'}</span>
+                          <span className="text-purple-400 font-bold truncate">
                             {wizardValues.platform === 'instagram'
                               ? Number(channelData.avgReelPlays || wizardValues.avgReelPlays).toLocaleString()
                               : channelData.averageViews.toLocaleString()}
                           </span>
                         </div>
-                        <div className="flex items-center space-x-1.5 bg-slate-900/40 px-3 py-1.5 rounded-xl border border-slate-800/40">
-                          <span className="text-slate-500">Engagement:</span>
+                        <div className="flex items-center justify-center sm:justify-start space-x-1.5 bg-slate-900/40 px-3 py-1.5 rounded-xl border border-slate-800/40 min-w-0">
+                          <span className="text-slate-500 shrink-0">Engagement:</span>
                           <span className="text-pink-400 font-bold">
                             {wizardValues.platform === 'instagram'
                               ? `${channelData.engagementRate || channelData.engagement || 0}%`
@@ -819,12 +821,12 @@ function App() {
                   </div>
 
                   {/* Target metrics */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8 text-left text-xs font-sans">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 mb-6 sm:mb-8 text-left text-xs font-sans">
                     <div className="bg-slate-900/50 border border-slate-800/50 rounded-2xl p-3 flex items-start gap-2.5">
                       <Target className="h-4 w-4 text-indigo-400 mt-0.5 shrink-0" />
                       <div>
                         <div className="text-slate-500 uppercase tracking-wider font-bold text-[9px]">Target Sponsor</div>
-                        <div className="text-slate-200 font-bold text-sm truncate max-w-[180px]">{channelData.brandName || wizardValues.brandName}</div>
+                        <div className="text-slate-200 font-bold text-sm truncate max-w-full">{channelData.brandName || wizardValues.brandName}</div>
                       </div>
                     </div>
 
@@ -888,16 +890,16 @@ function App() {
                   </div>
 
                   {/* Price display with lock */}
-                  <div className="bg-slate-900/60 rounded-3xl p-6 md:p-8 border border-slate-800 text-center relative overflow-hidden font-sans">
+                  <div className="bg-slate-900/60 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 border border-slate-800 text-center relative overflow-hidden font-sans">
                     
                     {/* NEW FEATURE 03: Campaign Format Toggle */}
                     {wizardValues.platform === 'instagram' && (
-                      <div className="flex justify-center mb-6">
-                        <div className="bg-slate-950/80 p-1.5 rounded-2xl border border-slate-800 inline-flex items-center gap-1">
+                      <div className="flex justify-center mb-5 sm:mb-6">
+                        <div className="bg-slate-950/80 p-1 sm:p-1.5 rounded-2xl border border-slate-800 inline-flex flex-wrap sm:flex-nowrap items-center justify-center gap-1 w-full sm:w-auto">
                           <button
                             type="button"
                             onClick={() => setSelectedFormat('reels')}
-                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                            className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                               selectedFormat === 'reels'
                                 ? 'bg-purple-600/35 border border-purple-500/30 text-purple-200'
                                 : 'border border-transparent text-slate-400 hover:text-slate-200'
@@ -908,7 +910,7 @@ function App() {
                           <button
                             type="button"
                             onClick={() => setSelectedFormat('combined')}
-                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                            className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                               selectedFormat === 'combined'
                                 ? 'bg-purple-600/35 border border-purple-500/30 text-purple-200'
                                 : 'border border-transparent text-slate-400 hover:text-slate-200'
@@ -919,7 +921,7 @@ function App() {
                           <button
                             type="button"
                             onClick={() => setSelectedFormat('stories')}
-                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                            className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                               selectedFormat === 'stories'
                                 ? 'bg-purple-600/35 border border-purple-500/30 text-purple-200'
                                 : 'border border-transparent text-slate-400 hover:text-slate-200'
@@ -934,11 +936,11 @@ function App() {
                     <div className="text-slate-400 font-semibold mb-4 uppercase tracking-wider text-xs">Calibrated Pitch Deck Valuation</div>
 
                     {paymentStatus === 'success' ? (
-                      <div className="text-5xl md:text-7xl font-black bg-gradient-to-r from-emerald-400 to-cyan-400 text-transparent bg-clip-text">
+                      <div className="text-4xl sm:text-5xl md:text-7xl font-black bg-gradient-to-r from-emerald-400 to-cyan-400 text-transparent bg-clip-text">
                         ₹{displayFee.toLocaleString()}
                       </div>
                     ) : (
-                      <div className="text-5xl md:text-7xl font-black text-slate-500 blur-lg select-none transition-all duration-500">
+                      <div className="text-4xl sm:text-5xl md:text-7xl font-black text-slate-500 blur-lg select-none transition-all duration-500">
                         ₹{displayFee.toLocaleString()}
                       </div>
                     )}
@@ -948,7 +950,7 @@ function App() {
                         <span className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold underline underline-offset-2 cursor-help transition-colors">
                           How is this calculated?
                         </span>
-                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 p-3 bg-slate-900 border border-slate-800 rounded-xl text-left text-xs text-slate-350 shadow-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-30">
+                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-[min(18rem,calc(100vw-2rem))] p-3 bg-slate-900 border border-slate-800 rounded-xl text-left text-xs text-slate-350 shadow-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-30">
                           Your rate is based on your subscriber/follower tier, content niche commercial value, engagement quality, and audience geography. This is the market rate — not an estimate based on AdSense.
                         </div>
                       </div>
@@ -1009,16 +1011,18 @@ function App() {
       <FounderStorySection />
 
       {/* Footer */}
-      <footer className="w-full max-w-6xl mx-auto py-12 px-6 sm:px-8 border-t border-slate-900 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500 gap-6 mt-12 bg-slate-950/20">
-        <div className="flex flex-col md:flex-row items-center gap-2 md:gap-6">
+      <footer className="w-full max-w-6xl mx-auto py-8 sm:py-12 px-5 sm:px-6 md:px-8 border-t border-slate-900 flex flex-col items-center justify-center text-center md:text-left md:flex-row md:justify-between text-xs text-slate-500 gap-4 sm:gap-6 mt-8 sm:mt-12 bg-slate-950/20">
+        <div className="flex flex-col items-center md:flex-row gap-2 md:gap-6">
           <span>© {new Date().getFullYear()} SponsorScout. All rights reserved.</span>
           <div className="hidden md:block h-3.5 w-px bg-slate-800" />
-          <a href="#how-it-works" className="hover:text-slate-300 transition-colors">How It Works</a>
-          <a href="#demos" className="hover:text-slate-300 transition-colors">Demos</a>
-          <a href="#founder-story" className="hover:text-slate-300 transition-colors">Story</a>
+          <div className="flex items-center gap-4 sm:gap-6">
+            <a href="#how-it-works" className="hover:text-slate-300 transition-colors">How It Works</a>
+            <a href="#demos" className="hover:text-slate-300 transition-colors">Demos</a>
+            <a href="#founder-story" className="hover:text-slate-300 transition-colors">Story</a>
+          </div>
         </div>
         
-        <div className="flex items-center space-x-1.5 bg-slate-900/40 border border-slate-850 px-4 py-2.5 rounded-full shadow-inner hover:border-slate-700/60 transition-all duration-300">
+        <div className="flex flex-wrap items-center justify-center gap-1.5 bg-slate-900/40 border border-slate-850 px-3 sm:px-4 py-2.5 rounded-full shadow-inner hover:border-slate-700/60 transition-all duration-300">
           <AlertCircle className="h-4 w-4 text-amber-500/80 shrink-0" />
           <span>Payment issues?</span>
           <button
@@ -1026,7 +1030,7 @@ function App() {
               setView('claim-fallback');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="text-indigo-400 hover:text-indigo-300 font-semibold underline underline-offset-2 ml-1 cursor-pointer transition-colors"
+            className="text-indigo-400 hover:text-indigo-300 font-semibold underline underline-offset-2 ml-0.5 cursor-pointer transition-colors"
           >
             Claim report manually
           </button>

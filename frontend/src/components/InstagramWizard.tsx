@@ -30,8 +30,8 @@ const Tooltip = ({ text, children }: { text: string; children: React.ReactNode }
         <HelpCircle className="h-3.5 w-3.5" />
       </button>
       {show && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-300 leading-relaxed shadow-xl z-50">
-          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-800 border-r border-b border-slate-700 rotate-45" />
+        <div className="absolute bottom-full left-0 sm:left-1/2 sm:-translate-x-1/2 mb-2 w-[min(16rem,calc(100vw-2rem))] p-3 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-300 leading-relaxed shadow-xl z-50">
+          <div className="absolute -bottom-1 left-4 sm:left-1/2 sm:-translate-x-1/2 w-2 h-2 bg-slate-800 border-r border-b border-slate-700 rotate-45" />
           {text}
         </div>
       )}
@@ -242,14 +242,40 @@ export default function InstagramWizard({ loading, onEvaluate, initialValues }: 
   const StepIcon = STEP_ICONS[step - 1];
 
   return (
-    <div className="w-full max-w-xl mx-auto px-4 font-sans">
-      {/* Progress bar — 7 steps */}
-      <div className="flex items-center justify-between mb-8 px-1">
+    <div className="w-full max-w-xl mx-auto px-2 sm:px-4 font-sans">
+      {/* Progress bar — compact on mobile, full on sm+ */}
+
+      {/* Mobile: compact step indicator */}
+      <div className="flex sm:hidden items-center justify-between mb-6 px-1">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-purple-500 bg-purple-500/10 text-purple-400 font-bold text-sm shadow-[0_0_12px_-3px_rgba(168,85,247,0.5)]">
+            {step}
+          </div>
+          <div>
+            <div className="text-sm font-bold text-white">{STEP_LABELS[step - 1]}</div>
+            <div className="text-[10px] text-slate-500 font-medium">Step {step} of {TOTAL_STEPS}</div>
+          </div>
+        </div>
+        {/* Mini progress dots */}
+        <div className="flex items-center gap-1">
+          {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((num) => (
+            <div
+              key={num}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                step === num ? 'w-4 bg-purple-500' : step > num ? 'w-1.5 bg-purple-600' : 'w-1.5 bg-slate-800'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop: full 7-step progress bar */}
+      <div className="hidden sm:flex items-center justify-between mb-8 px-1">
         {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((num) => (
           <React.Fragment key={num}>
             <div className="flex flex-col items-center">
               <div
-                className={`relative flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-full border-2 font-bold text-xs transition-all duration-500 ${step === num
+                className={`relative flex h-9 w-9 items-center justify-center rounded-full border-2 font-bold text-xs transition-all duration-500 ${step === num
                     ? 'border-purple-500 bg-purple-500/10 text-purple-400 shadow-[0_0_12px_-3px_rgba(168,85,247,0.5)]'
                     : step > num
                       ? 'border-purple-600 bg-purple-600 text-white'
@@ -258,7 +284,7 @@ export default function InstagramWizard({ loading, onEvaluate, initialValues }: 
               >
                 {step > num ? <Check className="h-3.5 w-3.5" /> : num}
               </div>
-              <span className={`mt-1.5 text-[9px] md:text-[10px] font-semibold tracking-wide uppercase transition-colors duration-300 text-center leading-tight max-w-[52px] ${step === num ? 'text-purple-400' : 'text-slate-600'
+              <span className={`mt-1.5 text-[10px] font-semibold tracking-wide uppercase transition-colors duration-300 text-center leading-tight max-w-[56px] ${step === num ? 'text-purple-400' : 'text-slate-600'
                 }`}>
                 {STEP_LABELS[num - 1]}
               </span>
@@ -272,7 +298,7 @@ export default function InstagramWizard({ loading, onEvaluate, initialValues }: 
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/40 p-5 md:p-8 backdrop-blur-2xl shadow-2xl">
+      <form onSubmit={handleSubmit} className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-800 bg-slate-900/40 p-4 sm:p-5 md:p-8 backdrop-blur-2xl shadow-2xl">
         <AnimatePresence mode="wait">
           {/* ═══ STEP 1: Your Profile ═══ */}
           {step === 1 && (
@@ -326,7 +352,7 @@ export default function InstagramWizard({ loading, onEvaluate, initialValues }: 
               </div>
               <p className="text-slate-400 text-sm leading-relaxed">Open Instagram → Profile → tap Followers.</p>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <Tooltip text="Where to find this → Open your Instagram profile. The follower count is displayed on your profile page.">
                     <label htmlFor="ig-followers" className={labelClass}>Total Followers</label>
@@ -367,7 +393,7 @@ export default function InstagramWizard({ loading, onEvaluate, initialValues }: 
                 <input type="number" id="ig-reel-plays" value={avgReelPlays} onChange={(e) => setAvgReelPlays(e.target.value)} placeholder="e.g. 50000" className={inputClass} />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label htmlFor="ig-reel-likes" className={labelClass}>Avg. Reel Likes <span className="text-slate-600 normal-case font-normal">— optional</span></label>
                   <input type="number" id="ig-reel-likes" value={avgReelLikes} onChange={(e) => setAvgReelLikes(e.target.value)} placeholder="e.g. 800" className={inputClass} />
@@ -378,7 +404,7 @@ export default function InstagramWizard({ loading, onEvaluate, initialValues }: 
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <Tooltip text="Shares are a strong signal of audience quality for brands. Shared content indicates active recommendation behavior.">
                     <label htmlFor="ig-reel-shares" className={labelClass}>Avg. Shares <span className="text-slate-600 normal-case font-normal">— optional</span></label>
@@ -450,7 +476,7 @@ export default function InstagramWizard({ loading, onEvaluate, initialValues }: 
               </div>
               <p className="text-slate-400 text-sm leading-relaxed">Open Instagram → Insights → Audience. Look at age, gender, and top locations.</p>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label htmlFor="ig-age-group" className={labelClass}>Primary Age Group</label>
                   <select id="ig-age-group" value={primaryAgeGroup} onChange={(e) => setPrimaryAgeGroup(e.target.value)} className={selectClass}>
@@ -542,7 +568,7 @@ export default function InstagramWizard({ loading, onEvaluate, initialValues }: 
                 <span className="text-xs text-slate-500 mt-1 block">This directly appears in your pitch email.</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label htmlFor="ig-recent-reel-2" className={labelClass}>2nd Reel Topic <span className="text-slate-600 normal-case font-normal">— optional</span></label>
                   <input type="text" id="ig-recent-reel-2" value={secondRecentReel} onChange={(e) => setSecondRecentReel(e.target.value)} placeholder="e.g. honest protein review" className={inputClass} />
@@ -611,7 +637,7 @@ export default function InstagramWizard({ loading, onEvaluate, initialValues }: 
                   <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Review before generating</span>
                   <button type="button" onClick={() => setStep(1)} className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer">Edit</button>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   <div><span className="text-slate-500">Handle:</span> <span className="text-slate-200 font-medium">@{handle.replace(/^@/, '')}</span></div>
                   <div><span className="text-slate-500">Niche:</span> <span className="text-slate-200 font-medium">{niche}</span></div>
                   <div><span className="text-slate-500">Followers:</span> <span className="text-slate-200 font-medium">{formatDisplay(totalFollowers)}</span></div>
@@ -628,12 +654,12 @@ export default function InstagramWizard({ loading, onEvaluate, initialValues }: 
         {error && <p className="mt-3 text-xs text-red-400 bg-red-400/10 border border-red-400/20 p-2 rounded-lg text-center">{error}</p>}
 
         {/* Navigation buttons */}
-        <div className="flex justify-between pt-5 mt-4 border-t border-slate-800/60">
+        <div className="flex justify-between pt-4 sm:pt-5 mt-4 border-t border-slate-800/60 gap-3">
           {step > 1 ? (
             <button
               type="button"
               onClick={handleBack}
-              className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center space-x-2 cursor-pointer text-sm"
+              className="px-4 sm:px-5 py-2.5 sm:py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center space-x-2 cursor-pointer text-sm min-h-[44px]"
             >
               <ChevronLeft className="h-4 w-4" />
               <span>Back</span>
@@ -645,7 +671,7 @@ export default function InstagramWizard({ loading, onEvaluate, initialValues }: 
               type="button"
               onClick={handleNext}
               disabled={!canProceed()}
-              className="px-6 py-2.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center space-x-2 shadow-lg shadow-purple-500/20 cursor-pointer text-sm md:text-base"
+              className="px-5 sm:px-6 py-2.5 sm:py-3 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center space-x-2 shadow-lg shadow-purple-500/20 cursor-pointer text-sm md:text-base min-h-[44px]"
             >
               <span>Continue</span>
               <ChevronRight className="h-4 w-4" />

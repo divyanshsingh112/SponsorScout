@@ -93,14 +93,14 @@ export default function YoutubeWizard({ loading, onEvaluate, initialValues }: Yo
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto px-4 font-sans">
+    <div className="w-full max-w-xl mx-auto px-2 sm:px-4 font-sans">
       {/* Step progress */}
-      <div className="flex items-center justify-between mb-8 px-4">
+      <div className="flex items-center justify-between mb-6 sm:mb-8 px-2 sm:px-4">
         {[1, 2, 3].map((num) => (
           <React.Fragment key={num}>
             <div className="flex flex-col items-center">
               <div 
-                className={`relative flex h-10 w-10 items-center justify-center rounded-full border-2 font-bold text-sm transition-all duration-500 ${
+                className={`relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border-2 font-bold text-xs sm:text-sm transition-all duration-500 ${
                   step === num 
                     ? 'border-indigo-500 bg-indigo-500/10 text-indigo-400 shadow-[0_0_15px_-3px_rgba(99,102,241,0.5)]' 
                     : step > num 
@@ -110,14 +110,14 @@ export default function YoutubeWizard({ loading, onEvaluate, initialValues }: Yo
               >
                 {step > num ? <Check className="h-4 w-4" /> : num}
               </div>
-              <span className={`mt-2 text-xs font-semibold tracking-wide uppercase transition-colors duration-300 ${
+              <span className={`mt-1.5 sm:mt-2 text-[10px] sm:text-xs font-semibold tracking-wide uppercase transition-colors duration-300 ${
                 step === num ? 'text-indigo-400' : 'text-slate-600'
               }`}>
                 {num === 1 ? 'Channel' : num === 2 ? 'Targeting' : 'Brand Spot'}
               </span>
             </div>
             {num < 3 && (
-              <div className={`h-[2px] flex-1 mx-2 rounded transition-all duration-500 ${
+              <div className={`h-[2px] flex-1 mx-1.5 sm:mx-2 rounded transition-all duration-500 ${
                 step > num ? 'bg-indigo-600' : 'bg-slate-800'
               }`} />
             )}
@@ -126,7 +126,7 @@ export default function YoutubeWizard({ loading, onEvaluate, initialValues }: Yo
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/40 p-6 md:p-8 backdrop-blur-2xl shadow-2xl">
+      <form onSubmit={handleSubmit} className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-800 bg-slate-900/40 p-4 sm:p-6 md:p-8 backdrop-blur-2xl shadow-2xl">
         <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.div
@@ -174,7 +174,7 @@ export default function YoutubeWizard({ loading, onEvaluate, initialValues }: Yo
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center space-x-2 shadow-lg shadow-indigo-500/20 cursor-pointer text-sm md:text-base"
+                  className="px-5 sm:px-6 py-2.5 sm:py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center space-x-2 shadow-lg shadow-indigo-500/20 cursor-pointer text-sm md:text-base min-h-[44px]"
                 >
                   <span>Continue</span>
                   <ChevronRight className="h-4 w-4" />
@@ -248,7 +248,7 @@ export default function YoutubeWizard({ loading, onEvaluate, initialValues }: Yo
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center space-x-2 cursor-pointer text-sm"
+                  className="px-4 sm:px-5 py-2.5 sm:py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center space-x-2 cursor-pointer text-sm min-h-[44px]"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   <span>Back</span>
@@ -256,7 +256,7 @@ export default function YoutubeWizard({ loading, onEvaluate, initialValues }: Yo
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center space-x-2 shadow-lg shadow-indigo-500/20 cursor-pointer text-sm md:text-base"
+                  className="px-5 sm:px-6 py-2.5 sm:py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center space-x-2 shadow-lg shadow-indigo-500/20 cursor-pointer text-sm md:text-base min-h-[44px]"
                 >
                   <span>Continue</span>
                   <ChevronRight className="h-4 w-4" />
@@ -325,7 +325,7 @@ export default function YoutubeWizard({ loading, onEvaluate, initialValues }: Yo
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center space-x-2 cursor-pointer text-sm"
+                  className="px-4 sm:px-5 py-2.5 sm:py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center space-x-2 cursor-pointer text-sm min-h-[44px]"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   <span>Back</span>
@@ -333,7 +333,7 @@ export default function YoutubeWizard({ loading, onEvaluate, initialValues }: Yo
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center space-x-2 shadow-lg shadow-indigo-500/20 cursor-pointer disabled:opacity-50 text-sm md:text-base"
+                  className="px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center space-x-2 shadow-lg shadow-indigo-500/20 cursor-pointer disabled:opacity-50 text-sm md:text-base min-h-[44px]"
                 >
                   {loading ? (
                     <>
